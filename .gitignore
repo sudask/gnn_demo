@@ -1,3 +1,2 @@
-.venv/
-raw/
 .DS_Store
+checkpoints/

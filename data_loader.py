@@ -1,5 +1,15 @@
-from common import *
+from config import *
 from torch_geometric.data import Data
+
+class GraphDataSet(Dataset):
+    def __init__(self, data_list):
+        self.data_list = data_list
+
+    def __len__(self):
+        return len(self.data_list)
+    
+    def __getitem__(self, idx):
+        return self.data_list[idx]
 
 def generate_features():
     x = torch.linspace(1, GRID_SIZE, GRID_SIZE) / (GRID_SIZE / 10)
@@ -31,14 +41,15 @@ def prepare_training_data():
     padding = torch.zeros_like(val)
     tmp = torch.stack((X.flatten(), Y.flatten(), padding), dim=1)
     
-    training_data = []
+    data_list = []
     for i in range(GRID_SIZE * GRID_SIZE):
         new_feature = torch.cat((feature, tmp[i].unsqueeze(0)), dim=0)
-        training_data.append(Data(x=new_feature, edge_index=edge, y=val[i]))
+        data_list.append(Data(x=new_feature, edge_index=edge, y=val[i]))
     
-    print(training_data[-1].y)
-        
-    return training_data
+    graph_data = GraphDataSet(data_list)
+    loader = DataLoader(graph_data, batch_size=1, shuffle=True)
+
+    return loader
 
 def prepare_testing_data():
     feature, edge = generate_features()
@@ -53,12 +64,15 @@ def prepare_testing_data():
     padding = torch.zeros_like(x)
     tmp = torch.stack((x.flatten(), y.flatten(), padding.flatten()), dim=1)
     
-    testing_data = []
+    data_list = []
     for i in range(TEST_NUM):
         new_feature = torch.cat((feature, tmp[i].unsqueeze(0)), dim=0)
-        testing_data.append(Data(x=new_feature, edge_index=edge, y=val[i]))
+        data_list.append(Data(x=new_feature, edge_index=edge, y=val[i]))
     
-    return testing_data
+    graph_data = GraphDataSet(data_list)
+    loader = DataLoader(graph_data, batch_size=1, shuffle=True)
+
+    return loader
 
 if __name__ == "__main__":
     prepare_training_data()

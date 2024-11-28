@@ -1,4 +1,4 @@
-from common import *
+from config import *
 
 from torch_geometric.nn import GCNConv
 

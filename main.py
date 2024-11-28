@@ -1,4 +1,4 @@
-from data_prep import *
+from data_loader import *
 from model import *
 
 model = SimpleGNN()
