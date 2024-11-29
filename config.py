@@ -3,13 +3,17 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 from torch.utils.data import DataLoader, Dataset
+import random
+import os
 
 # Parameters
 GRID_SIZE = 10
-TEST_NUM = 100
+TEST_NUM = 1000
 
 EPOCH = 500
 LR = 0.01
+
+SAVE_DIR = "checkpoints"
 
 def U(x, y):
     term1 = torch.sin(x + np.cos(x + y))
