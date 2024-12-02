@@ -10,7 +10,7 @@ import os
 GRID_SIZE = 10
 TEST_NUM = 1000
 
-EPOCH = 500
+EPOCH = 20
 LR = 0.01
 
 SAVE_DIR = "checkpoints"

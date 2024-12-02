@@ -1,7 +1,7 @@
 from config import *
 from torch_geometric.data import Data
     
-def generateFeature(size, left_end=0, right_end=10, drop_first=True):
+def generateGrid(size, left_end=0, right_end=10, drop_first=True):
     x = torch.linspace(left_end, right_end, size+1)
     y = torch.linspace(left_end, right_end, size+1)
 
@@ -15,9 +15,9 @@ def generateFeature(size, left_end=0, right_end=10, drop_first=True):
     y = y.reshape(-1, 1)
 
     grid = torch.cat((x, y), dim=1)
-    val = U(grid[:, 0], grid[:, 1])
+    val = U(grid[:, 0], grid[:, 1]).unsqueeze(1)
 
-    return torch.cat((grid, val.unsqueeze(1)), dim=1)
+    return grid, val
 
 def generateEdgeIndex(size):
     edge_index = []
@@ -27,32 +27,27 @@ def generateEdgeIndex(size):
         if i < size * (size - 1):
             edge_index.append([i, i + size])
 
-    return edge_index
+    return torch.tensor(edge_index, dtype=torch.long).t().contiguous()
 
-def packData(feature, edge_index, coordinate):
-    padding = torch.zeros((coordinate.shape[0], 1))
-    padded_coordinate = torch.cat((coordinate, padding), dim=1)
-
-    function_val = U(coordinate[:, 0], coordinate[:, 1])
-
-    size = feature.shape[0]
-    for i in range(size):
-        edge_index.append([i, size])
-
-    edge_index = torch.tensor(edge_index, dtype=torch.long).t().contiguous()
-
-    feature_plus_coordinate = []
-    for i in range(padded_coordinate.shape[0]):
-        feature_plus_coordinate.append(torch.cat((feature, padded_coordinate[i].unsqueeze(0)), dim=0))
-
+def packData(grid, val, edge_index, coordinate):
     data = []
-    for i in range(len(feature_plus_coordinate)):
-        data.append(Data(x=feature_plus_coordinate[i], edge_index=edge_index, y=function_val[i]))
-
+    U_val = U(coordinate[:, 0], coordinate[:, 1])
+    for i in range(coordinate.shape[0]):
+        diff = grid - coordinate[i]
+        norm = torch.norm(diff, dim=1) + 1e-9
+        norm = 1 / norm
+        # normalization
+        min_val = torch.min(norm)
+        max_val = torch.max(norm)
+        
+        normalized_dist = (norm - min_val) / (max_val - min_val)
+        
+        feature = torch.cat((normalized_dist.unsqueeze(1), val), dim=1)
+        data.append(Data(x=feature, edge_index=edge_index, y=U_val[i]))
     return data
     
 def generateTrainingData(size):
-    feature = generateFeature(size)
+    grid, val = generateGrid(size)
     edge_index = generateEdgeIndex(size)
     
     x = torch.linspace(1, 10, size)
@@ -65,7 +60,7 @@ def generateTrainingData(size):
 
     coordinate = torch.cat((x, y), dim=1)
 
-    return packData(feature, edge_index, coordinate)
+    return packData(grid, val, edge_index, coordinate)
 
 if __name__ == "__main__":
     print(generateTrainingData(10))
