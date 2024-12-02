@@ -31,23 +31,21 @@ for i in range(len(data)):
 
 predict_val = torch.stack(predict_val)
 
-# 找到真实值和预测值中的最小值和最大值，用于统一颜色映射范围
-min_val = min(torch.min(real_val).item(), torch.min(predict_val).item())
-max_val = max(torch.max(real_val).item(), torch.max(predict_val).item())
+# 计算真实值与预测值的差值
+diff_val = real_val - predict_val
+
+# 找到差值中的最小值和最大值，用于统一颜色映射范围
+min_val = torch.min(diff_val).item()
+max_val = torch.max(diff_val).item()
 
 coordinate_np = coordinate.detach().numpy()
-real_val_np = real_val.detach().numpy()
-predict_val_np = predict_val.detach().numpy()
+diff_val_np = diff_val.detach().numpy()
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+fig, ax = plt.subplots(1, 1, figsize=(8, 6))
 
 # 设置统一的颜色映射范围
-scatter1 = ax1.scatter(coordinate_np[:, 0], coordinate_np[:, 1], c=real_val_np, cmap='viridis', vmin=min_val, vmax=max_val)
-ax1.set_title('Real Values')
-fig.colorbar(scatter1, ax=ax1)
-
-scatter2 = ax2.scatter(coordinate_np[:, 0], coordinate_np[:, 1], c=predict_val_np, cmap='viridis', vmin=min_val, vmax=max_val)
-ax2.set_title('Predict Values')
-fig.colorbar(scatter2, ax=ax2)
+scatter = ax.scatter(coordinate_np[:, 0], coordinate_np[:, 1], c=diff_val_np, cmap='viridis', vmin=min_val, vmax=max_val)
+ax.set_title('Difference between Real and Predict Values')
+fig.colorbar(scatter, ax=ax)
 
 plt.show()

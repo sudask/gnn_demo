@@ -22,7 +22,7 @@ for epoch in range(EPOCH):
         optimizer.zero_grad()
         output = model(data)
 
-        loss = criterion(output, data.y)
+        loss = criterion(H1(output), data.y)
         if total_loss is None:
             total_loss = loss
         else:

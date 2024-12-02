@@ -7,10 +7,16 @@ import random
 import os
 
 # Parameters
-GRID_SIZE = 10
+EPOCH = 50
 TEST_NUM = 1000
 
-EPOCH = 20
+# GRID_SIZE = 50
+# LR = 0.3
+
+# GRID_SIZE=20
+# LR = 0.008
+
+GRID_SIZE = 10
 LR = 0.01
 
 SAVE_DIR = "checkpoints"

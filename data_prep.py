@@ -15,9 +15,8 @@ def generateGrid(size, left_end=0, right_end=10, drop_first=True):
     y = y.reshape(-1, 1)
 
     grid = torch.cat((x, y), dim=1)
-    val = U(grid[:, 0], grid[:, 1]).unsqueeze(1)
-
-    return grid, val
+    
+    return grid
 
 def generateEdgeIndex(size):
     edge_index = []
@@ -47,7 +46,8 @@ def packData(grid, val, edge_index, coordinate):
     return data
     
 def generateTrainingData(size):
-    grid, val = generateGrid(size)
+    grid = generateGrid(size)
+    val = H1(U(grid[:, 0], grid[:, 1])).unsqueeze(1)
     edge_index = generateEdgeIndex(size)
     
     x = torch.linspace(1, 10, size)
