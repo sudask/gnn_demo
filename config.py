@@ -7,17 +7,17 @@ import random
 import os
 
 # Parameters
-EPOCH = 50
+EPOCH = 100
 TEST_NUM = 1000
 
 # GRID_SIZE = 50
-# LR = 0.3
+# LR = 0.002
 
 # GRID_SIZE=20
-# LR = 0.008
+# LR = 0.001
 
 GRID_SIZE = 10
-LR = 0.01
+LR = 0.005
 
 SAVE_DIR = "checkpoints"
 
@@ -32,3 +32,11 @@ def H1(u):
 
 def H2(u):
     return torch.cos(u - torch.sin(u))
+
+def observeOperator(u):
+    res = torch.zeros(u.shape[0])
+    for i in range(u.shape[0]):
+        if u[i, 1] == 0:
+            res[i] = H1(u[i, 0])
+        else:
+            res[i] = H2(u[i, 0])
