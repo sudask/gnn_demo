@@ -5,19 +5,21 @@ import numpy as np
 from torch.utils.data import DataLoader, Dataset
 import random
 import os
+from matplotlib import pyplot as plt
 
 # Parameters
 EPOCH = 100
 TEST_NUM = 1000
 
+# for one grid:
 # GRID_SIZE = 50
 # LR = 0.002
 
-# GRID_SIZE=20
-# LR = 0.001
-
 GRID_SIZE = 10
 LR = 0.005
+
+# for full question
+LEARING_RATE = 0.002
 
 SAVE_DIR = "checkpoints"
 
@@ -33,10 +35,9 @@ def H1(u):
 def H2(u):
     return torch.cos(u - torch.sin(u))
 
-def observeOperator(u):
-    res = torch.zeros(u.shape[0])
-    for i in range(u.shape[0]):
-        if u[i, 1] == 0:
-            res[i] = H1(u[i, 0])
-        else:
-            res[i] = H2(u[i, 0])
+def observeOperator(u, label):
+    if label == 0:
+        return H1(u)
+    
+    if label == 1:
+        return H2(u)

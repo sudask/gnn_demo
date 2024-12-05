@@ -1,53 +1,31 @@
-from model import *
-from data_prep import *
-import matplotlib.pyplot as plt
-import torch
+from config import *
 
+def plotDiff(coordinate, real_val, predict_val):
+    diff_val = real_val - predict_val
 
-model = SimpleGNN()
-model_path = "./checkpoints/trained_model_2.pth"
-model.load_state_dict(torch.load(model_path, weights_only=True))
+    min_val = np.min(diff_val)
+    max_val = np.max(diff_val)
 
+    fig, ax = plt.subplots(1, 1, figsize=(8, 6))
 
-def generateData(size, num_points=10000, left_end=0, right_end=10):
-    x = torch.rand(num_points) * (right_end - left_end) + left_end
-    y = torch.rand(num_points) * (right_end - left_end) + left_end
+    scatter = ax.scatter(coordinate[:, 0], coordinate[:, 1], c=diff_val, cmap='viridis', vmin=min_val, vmax=max_val)
+    ax.set_title('Difference between Real and Predict Values')
+    fig.colorbar(scatter, ax=ax)
 
-    real_val = U(x, y)
-    coordinate = torch.stack((x, y), dim=1)
-    edge_index = generateEdgeIndex(size)
-    grid = generateGrid(size)
-    val = H1(U(grid[:, 0], grid[:, 1])).unsqueeze(1)
+    plt.show()
 
-    data = packData(grid, val, edge_index, coordinate)
+def plot(coordinate, real_val, predict_val):
+    min_val = min(np.min(real_val), np.min(predict_val))
+    max_val = max(np.min(real_val), np.max(predict_val))
 
-    return data, coordinate, real_val
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
 
+    scatter1 = ax1.scatter(coordinate[:, 0], coordinate[:, 1], c=real_val, cmap='viridis', vmin=min_val, vmax=max_val)
+    ax1.set_title('Real Values')
+    fig.colorbar(scatter1, ax=ax1)
 
-data, coordinate, real_val = generateData(GRID_SIZE)
-predict_val = []
-for i in range(len(data)):
-    predict_val.append(model(data[i]))
+    scatter2 = ax2.scatter(coordinate[:, 0], coordinate[:, 1], c=predict_val, cmap='viridis', vmin=min_val, vmax=max_val)
+    ax2.set_title('Predict Values')
+    fig.colorbar(scatter2, ax=ax2)
 
-predict_val = torch.stack(predict_val)
-
-# 找到真实值和预测值中的最小值和最大值，用于统一颜色映射范围
-min_val = min(torch.min(real_val).item(), torch.min(predict_val).item())
-max_val = max(torch.max(real_val).item(), torch.max(predict_val).item())
-
-coordinate_np = coordinate.detach().numpy()
-real_val_np = real_val.detach().numpy()
-predict_val_np = predict_val.detach().numpy()
-
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-
-# 设置统一的颜色映射范围
-scatter1 = ax1.scatter(coordinate_np[:, 0], coordinate_np[:, 1], c=real_val_np, cmap='viridis', vmin=min_val, vmax=max_val)
-ax1.set_title('Real Values')
-fig.colorbar(scatter1, ax=ax1)
-
-scatter2 = ax2.scatter(coordinate_np[:, 0], coordinate_np[:, 1], c=predict_val_np, cmap='viridis', vmin=min_val, vmax=max_val)
-ax2.set_title('Predict Values')
-fig.colorbar(scatter2, ax=ax2)
-
-plt.show()
+    plt.show()

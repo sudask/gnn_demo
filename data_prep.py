@@ -28,7 +28,7 @@ def generateEdgeIndex(size):
 
     return torch.tensor(edge_index, dtype=torch.long).t().contiguous()
 
-def packData(grid, val, edge_index, coordinate):
+def packDataSimp(grid, val, edge_index, coordinate):
     data = []
     U_val = U(coordinate[:, 0], coordinate[:, 1])
     for i in range(coordinate.shape[0]):
@@ -45,7 +45,7 @@ def packData(grid, val, edge_index, coordinate):
         data.append(Data(x=feature, edge_index=edge_index, y=U_val[i]))
     return data
     
-def generateTrainingData(size):
+def generateTrainingDataSimp(size):
     grid = generateGrid(size)
     val = H1(U(grid[:, 0], grid[:, 1])).unsqueeze(1)
     edge_index = generateEdgeIndex(size)
@@ -60,7 +60,89 @@ def generateTrainingData(size):
 
     coordinate = torch.cat((x, y), dim=1)
 
-    return packData(grid, val, edge_index, coordinate)
+    return packDataSimp(grid, val, edge_index, coordinate)
 
-if __name__ == "__main__":
-    print(generateTrainingData(10))
+class MyData:
+    def __init__(self, feature1, feature2, edge_index1, edge_index2, label=None):
+        self.feature1 = feature1
+        self.feature2 = feature2
+        self.edge_index1 = edge_index1
+        self.edge_index2 = edge_index2
+        self.label = label
+
+def processFeature(grid, val, coordinate):
+    features = []
+    for i in range(coordinate.shape[0]):
+        diff = grid - coordinate[i]
+        norm = torch.norm(diff, dim=1) + 1e-9
+        norm = 1 / norm
+        #normalization
+        min_val = torch.min(norm)
+        max_val = torch.max(norm)
+        
+        normalized_dist = (norm - min_val) / (max_val - min_val)
+        
+        feature = torch.cat((normalized_dist.unsqueeze(1), val.unsqueeze(1)), dim=1)
+        features.append(feature)
+
+    return features
+
+def generateTrainingData():
+    grid1 = generateGrid(50)
+    grid2 = generateGrid(10)
+
+    val1 = H1(U(grid1[:, 0], grid1[:, 1]))
+    val2 = H2(U(grid2[:, 0], grid2[:, 1]))
+
+    edge_index1 = generateEdgeIndex(50)
+    edge_index2 = generateEdgeIndex(10)
+    
+    coordinate1 = grid1.clone()
+    coordinate2 = grid2.clone()
+
+    feature11 = processFeature(grid1, val1, coordinate1)
+    feature12 = processFeature(grid2, val2, coordinate1)
+
+    padding1 = torch.zeros_like(val1)
+    label1 = torch.stack((val1, padding1), dim=1)
+
+    feature21 = processFeature(grid1, val1, coordinate2)
+    feature22 = processFeature(grid2, val2, coordinate2)
+
+    padding2 = torch.zeros_like(val2)
+    label2 = torch.stack((val2, padding2), dim=1)
+
+    training_data = []
+
+    for i in range(coordinate1.shape[0]):
+        training_data.append(MyData(feature11[i], feature12[i], edge_index1, edge_index2, label1[i]))
+
+    for i in range(coordinate2.shape[0]):
+        training_data.append(MyData(feature21[i], feature22[i], edge_index1, edge_index2, label2[i]))
+
+    return training_data
+
+def generateTestingData():
+    grid1 = generateGrid(50)
+    grid2 = generateGrid(10)
+
+    val1 = H1(U(grid1[:, 0], grid1[:, 1]))
+    val2 = H2(U(grid2[:, 0], grid2[:, 1]))
+
+    edge_index1 = generateEdgeIndex(50)
+    edge_index2 = generateEdgeIndex(10)
+
+    x = torch.rand(10000) * 10
+    y = torch.rand(10000) * 10
+
+    coordinate = torch.stack((x, y), dim=1)
+
+    feature1 = processFeature(grid1, val1, coordinate)
+    feature2 = processFeature(grid2, val2, coordinate)
+
+    testing_data = []
+
+    for i in range(coordinate.shape[0]):
+        testing_data.append(MyData(feature1[i], feature2[i], edge_index1, edge_index2))
+
+    return testing_data, coordinate
