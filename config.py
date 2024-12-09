@@ -8,7 +8,7 @@ import os
 from matplotlib import pyplot as plt
 
 # Parameters
-EPOCH = 100
+EPOCH = 50
 TEST_NUM = 1000
 
 # for one grid:
@@ -19,7 +19,7 @@ GRID_SIZE = 10
 LR = 0.005
 
 # for full question
-LEARING_RATE = 0.002
+LEARING_RATE = 0.0005
 
 SAVE_DIR = "checkpoints"
 

@@ -11,7 +11,7 @@ def trainAndPlot(model, training_data, optimizer, criterion):
             optimizer.zero_grad()
             output = model(data)
 
-            loss = criterion(observeOperator(output, data.label[1]), data.label[0])
+            loss = criterion(output, data.label[0])
             if total_loss is None:
                 total_loss = loss
             else:

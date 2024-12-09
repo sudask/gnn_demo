@@ -29,3 +29,20 @@ def plot(coordinate, real_val, predict_val):
     fig.colorbar(scatter2, ax=ax2)
 
     plt.show()
+    
+from mpl_toolkits.mplot3d import Axes3D
+
+def plot3d(coordinate, real_val, predict_val):
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111, projection='3d')
+
+    ax.scatter(coordinate[:, 0], coordinate[:, 1], real_val, c='blue', label='Real Values', alpha=0.6)
+    ax.scatter(coordinate[:, 0], coordinate[:, 1], predict_val, c='red', label='Predict Values', alpha=0.6)
+
+    ax.set_title('Real and Predict Values in 3D')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.legend()
+
+    plt.show()
