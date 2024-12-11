@@ -35,23 +35,23 @@ class CompleteGNN(nn.Module):
         feature1, feature2, edge_index1, edge_index2 = data.feature1, data.feature2, data.edge_index1, data.edge_index2
 
         feature1 = self.conv11(feature1, edge_index1)
-        feature2 = self.conv12(feature2, edge_index2)
+        # feature2 = self.conv12(feature2, edge_index2)
 
         feature1 = torch.tanh(feature1)
-        feature2 = torch.tanh(feature2)
+        # feature2 = torch.tanh(feature2)
         
         feature1 = self.conv21(feature1, edge_index1)
-        feature2 = self.conv22(feature2, edge_index2)
+        # feature2 = self.conv22(feature2, edge_index2)
 
         feature1 = torch.tanh(feature1)
-        feature2 = torch.tanh(feature2)
+        # feature2 = torch.tanh(feature2)
 
         feature1 = feature1.squeeze()
-        feature2 = feature2.squeeze()
+        # feature2 = feature2.squeeze()
 
         x1 = self.fc1(feature1)
-        x2 = self.fc2(feature2)
+        # x2 = self.fc2(feature2)
         
-        x = x1 * 1.0 + x2 * 0.0
+        # x = x1 * 1.0 + x2 * 0.0
 
-        return x.squeeze()
+        return x1.squeeze()

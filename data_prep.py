@@ -74,8 +74,8 @@ def processFeature(grid, val, coordinate):
     features = []
     for i in range(coordinate.shape[0]):
         diff = grid - coordinate[i]
-        norm = torch.norm(diff, dim=1) + 1e-9
-        norm = 1 / norm
+        norm = torch.norm(diff, dim=1)
+        # norm = 1 / norm
         #normalization
         min_val = torch.min(norm)
         max_val = torch.max(norm)
@@ -138,8 +138,8 @@ def generateTestingData():
     edge_index1 = generateEdgeIndex(46)
     edge_index2 = generateEdgeIndex(10)
 
-    x = torch.rand(300) * 10
-    y = torch.rand(300) * 10
+    x = torch.rand(2000) * 10
+    y = torch.rand(2000) * 10
 
     coordinate = torch.stack((x, y), dim=1)
 
