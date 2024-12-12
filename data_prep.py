@@ -1,9 +1,12 @@
 from config import *
 from torch_geometric.data import Data
     
-def generateGrid(size, left_end=1, right_end=10):
-    x = torch.linspace(left_end, right_end, size)
-    y = torch.linspace(left_end, right_end, size)
+def generateGrid(size, left_end=0, right_end=10):
+    x = torch.linspace(left_end, right_end, size + 1)
+    y = torch.linspace(left_end, right_end, size + 1)
+
+    x = x[1:]
+    y = y[1:]
 
     x, y = torch.meshgrid(x, y, indexing='ij')
 
@@ -28,40 +31,6 @@ def generateEdgeIndex(size):
 
     return torch.tensor(edge_index, dtype=torch.long).t().contiguous()
 
-def packDataSimp(grid, val, edge_index, coordinate):
-    data = []
-    U_val = U(coordinate[:, 0], coordinate[:, 1])
-    for i in range(coordinate.shape[0]):
-        diff = grid - coordinate[i]
-        norm = torch.norm(diff, dim=1) + 1e-9
-        norm = 1 / norm
-        # normalization
-        min_val = torch.min(norm)
-        max_val = torch.max(norm)
-        
-        normalized_dist = (norm - min_val) / (max_val - min_val)
-        
-        feature = torch.cat((normalized_dist.unsqueeze(1), val), dim=1)
-        data.append(Data(x=feature, edge_index=edge_index, y=U_val[i]))
-    return data
-    
-def generateTrainingDataSimp(size):
-    grid = generateGrid(size)
-    val = H1(U(grid[:, 0], grid[:, 1])).unsqueeze(1)
-    edge_index = generateEdgeIndex(size)
-    
-    x = torch.linspace(1, 10, size)
-    y = torch.linspace(1, 10, size)
-
-    x, y = torch.meshgrid(x, y, indexing='ij')
-
-    x = x.reshape(-1, 1)
-    y = y.reshape(-1, 1)
-
-    coordinate = torch.cat((x, y), dim=1)
-
-    return packDataSimp(grid, val, edge_index, coordinate)
-
 class MyData:
     def __init__(self, feature1, feature2, edge_index1, edge_index2, label=None):
         self.feature1 = feature1
@@ -75,7 +44,10 @@ def processFeature(grid, val, coordinate):
     for i in range(coordinate.shape[0]):
         diff = grid - coordinate[i]
         norm = torch.norm(diff, dim=1)
-        # norm = 1 / norm
+        if RECIPROCAL:
+            norm += 1e-9
+            norm = 1 / norm
+
         #normalization
         min_val = torch.min(norm)
         max_val = torch.max(norm)
@@ -88,16 +60,17 @@ def processFeature(grid, val, coordinate):
     return features
 
 def generateTrainingData():
-    grid1 = generateGrid(46)
+    grid1 = generateGrid(50)
     grid2 = generateGrid(10)
-
-    # val1 = H1(U(grid1[:, 0], grid1[:, 1]))
-    # val2 = H2(U(grid2[:, 0], grid2[:, 1]))
     
     val1 = U(grid1[:, 0], grid1[:, 1])
     val2 = U(grid2[:, 0], grid2[:, 1])
 
-    edge_index1 = generateEdgeIndex(46)
+    if USE_OBS:
+        val1 = H1(U(grid1[:, 0], grid1[:, 1]))
+        val2 = H2(U(grid2[:, 0], grid2[:, 1]))
+
+    edge_index1 = generateEdgeIndex(50)
     edge_index2 = generateEdgeIndex(10)
     
     coordinate1 = grid1.clone()
@@ -112,7 +85,7 @@ def generateTrainingData():
     feature21 = processFeature(grid1, val1, coordinate2)
     feature22 = processFeature(grid2, val2, coordinate2)
 
-    padding2 = torch.zeros_like(val2)
+    padding2 = torch.ones_like(val2)
     label2 = torch.stack((val2, padding2), dim=1)
 
     training_data = []
@@ -120,26 +93,28 @@ def generateTrainingData():
     for i in range(coordinate1.shape[0]):
         training_data.append(MyData(feature11[i], feature12[i], edge_index1, edge_index2, label1[i]))
 
-    for i in range(coordinate2.shape[0]):
-        training_data.append(MyData(feature21[i], feature22[i], edge_index1, edge_index2, label2[i]))
+    if TWO_GRID:
+        for i in range(coordinate2.shape[0]):
+            training_data.append(MyData(feature21[i], feature22[i], edge_index1, edge_index2, label2[i]))
 
     return training_data
 
 def generateTestingData():
-    grid1 = generateGrid(46)
+    grid1 = generateGrid(50)
     grid2 = generateGrid(10)
 
-    # val1 = H1(U(grid1[:, 0], grid1[:, 1]))
-    # val2 = H2(U(grid2[:, 0], grid2[:, 1]))
-    
     val1 = U(grid1[:, 0], grid1[:, 1])
     val2 = U(grid2[:, 0], grid2[:, 1])
+    
+    if USE_OBS:
+        val1 = H1(U(grid1[:, 0], grid1[:, 1]))
+        val2 = H2(U(grid2[:, 0], grid2[:, 1]))
 
-    edge_index1 = generateEdgeIndex(46)
+    edge_index1 = generateEdgeIndex(50)
     edge_index2 = generateEdgeIndex(10)
 
-    x = torch.rand(2000) * 10
-    y = torch.rand(2000) * 10
+    x = torch.rand(TEST_NUM) * 10
+    y = torch.rand(TEST_NUM) * 10
 
     coordinate = torch.stack((x, y), dim=1)
 

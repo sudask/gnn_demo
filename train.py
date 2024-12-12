@@ -11,7 +11,11 @@ def trainAndPlot(model, training_data, optimizer, criterion):
             optimizer.zero_grad()
             output = model(data)
 
-            loss = criterion(output, data.label[0])
+            if USE_OBS:
+                loss = criterion(observeOperator(output, data.label[1]), data.label[0])
+            else:
+                loss = criterion(output, data.label[0])
+
             if total_loss is None:
                 total_loss = loss
             else:
@@ -28,7 +32,7 @@ def trainAndPlot(model, training_data, optimizer, criterion):
     if not os.path.exists(SAVE_DIR):
         os.makedirs(SAVE_DIR)
 
-    model_path = os.path.join(SAVE_DIR, "full_model_test.pth")
+    model_path = os.path.join(SAVE_DIR, PTH_FILE_NAME)
     torch.save(model.state_dict(), model_path)
 
     plt.plot(loss_history)

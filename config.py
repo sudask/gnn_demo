@@ -8,20 +8,27 @@ import os
 from matplotlib import pyplot as plt
 
 # Parameters
-EPOCH = 100
-TEST_NUM = 1000
+EPOCH = 200
+# for reciprocal
+# LEARING_RATE = 0.0005
 
-# for one grid:
-# GRID_SIZE = 50
-# LR = 0.002
+# for one grid
+# LEARING_RATE = 0.002
 
-GRID_SIZE = 10
-LR = 0.005
+# for two grid
+# LEARING_RATE = 0.002
 
 # for full question
-LEARING_RATE = 0.005
+LEARING_RATE = 0.001
 
 SAVE_DIR = "checkpoints"
+
+TWO_GRID = True
+USE_OBS = True
+RECIPROCAL = False
+PTH_FILE_NAME = "full.pth"
+
+TEST_NUM = 2000
 
 def U(x, y):
     term1 = torch.sin(x + np.cos(x + y))

@@ -36,6 +36,9 @@ def plot3d(coordinate, real_val, predict_val):
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111, projection='3d')
 
+    mse = np.mean((real_val - predict_val) ** 2)
+    print(f"均方误差(MSE): {mse}")
+
     ax.scatter(coordinate[:, 0], coordinate[:, 1], real_val, c='blue', label='Real Values', alpha=0.6)
     ax.scatter(coordinate[:, 0], coordinate[:, 1], predict_val, c='red', label='Predict Values', alpha=0.6)
 
@@ -44,5 +47,29 @@ def plot3d(coordinate, real_val, predict_val):
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
     ax.legend()
+
+    plt.show()
+
+import matplotlib.pyplot as plt
+
+
+def plot_compare_3d(coordinate, real_val, predict_val):
+    fig = plt.figure(figsize=(12, 5))
+    ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+    ax2 = fig.add_subplot(1, 2, 2, projection='3d')
+
+    ax1.scatter(coordinate[:, 0], coordinate[:, 1], real_val, c='blue', label='Real Values', alpha=0.6)
+    ax1.set_title('Real Values')
+    ax1.set_xlabel('X')
+    ax1.set_ylabel('Y')
+    ax1.set_zlabel('Z')
+    ax1.legend()
+
+    ax2.scatter(coordinate[:, 0], coordinate[:, 1], predict_val, c='red', label='Predict Values', alpha=0.6)
+    ax2.set_title('Predict Values')
+    ax2.set_xlabel('X')
+    ax2.set_ylabel('Y')
+    ax2.set_zlabel('Z')
+    ax2.legend()
 
     plt.show()
