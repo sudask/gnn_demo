@@ -1,12 +1,10 @@
+import json
 from config import *
 from torch_geometric.data import Data
     
-def generateGrid(size, left_end=0, right_end=10):
-    x = torch.linspace(left_end, right_end, size + 1)
-    y = torch.linspace(left_end, right_end, size + 1)
-
-    x = x[1:]
-    y = y[1:]
+def generateGrid(size=50, left_end=0.2, right_end=10):
+    x = torch.linspace(left_end, right_end, size)
+    y = torch.linspace(left_end, right_end, size)
 
     x, y = torch.meshgrid(x, y, indexing='ij')
 
@@ -17,26 +15,60 @@ def generateGrid(size, left_end=0, right_end=10):
     
     return grid
 
-def generateEdgeIndex(size):
-    edge_index = []
-    for i in range(size * size):
-        if i % size < size - 1:
-            edge_index.append([i, i + 1])
-        if i < size * (size - 1):
-            edge_index.append([i, i + size])
-        if i % size > 0:
-            edge_index.append([i, i - 1])
-        if i >= size:
-            edge_index.append([i, i - size])
+edge_index_cache = []
 
-    return torch.tensor(edge_index, dtype=torch.long).t().contiguous()
+def generateGridOne(size=50, left_end=0.2, right_end=10):
+    x = torch.linspace(left_end, right_end, size)
+    y = torch.linspace(left_end, right_end, size)
+
+    x, y = torch.meshgrid(x, y, indexing='ij')
+
+    x = x.reshape(-1, 1)
+    y = y.reshape(-1, 1)
+
+    grid = torch.cat((x, y), dim=1)
+    
+    return grid
+
+def generateEdgeIndex(grid, file_path="edge_index_cache.json", force_update=False):
+    if os.path.exists(file_path) and not force_update:
+        try:
+            with open(file_path, "r") as file:
+                edge_index_cache = json.load(file)
+            return torch.tensor(edge_index_cache, dtype=torch.long).t().contiguous()
+        except json.JSONDecodeError as e:
+            print(f"读取文件 {file_path} 时出现JSON解析错误: {e}")
+            return None
+        except Exception as e:
+            print(f"读取文件 {file_path} 时出现未知错误: {e}")
+            return None
+
+    edge_index_cache = []
+    try:
+        for i in range(len(grid)):
+            for j in range(len(grid)):
+                if torch.norm(grid[i] - grid[j]) < DIST_THRES:
+                    edge_index_cache.append([i, j])
+    except TypeError as e:
+        print(f"输入数据类型有误: {e}")
+        return None
+    except Exception as e:
+        print(f"出现未知错误: {e}")
+        return None
+
+    try:
+        with open(file_path, "w") as file:
+            json.dump(edge_index_cache, file)
+    except IOError as e:
+        print(f"保存文件 {file_path} 时出现I/O错误: {e}")
+        return None
+
+    return torch.tensor(edge_index_cache, dtype=torch.long).t().contiguous() if edge_index_cache else None
 
 class MyData:
-    def __init__(self, feature1, feature2, edge_index1, edge_index2, label=None):
-        self.feature1 = feature1
-        self.feature2 = feature2
-        self.edge_index1 = edge_index1
-        self.edge_index2 = edge_index2
+    def __init__(self, feature, edge_index, label=None):
+        self.feature = feature
+        self.edge_index = edge_index
         self.label = label
 
 def processFeature(grid, val, coordinate):
@@ -60,8 +92,13 @@ def processFeature(grid, val, coordinate):
     return features
 
 def generateTrainingData():
-    grid1 = generateGrid(50)
-    grid2 = generateGrid(10)
+    grid1 = generateGrid(50, 0.2, 10)
+    grid2 = generateGrid(10, 0.5, 9.5)
+    
+    if TWO_GRID:
+        grid = torch.cat((grid1, grid2), dim=0)
+    else:
+        grid = generateGridOne()
     
     val1 = U(grid1[:, 0], grid1[:, 1])
     val2 = U(grid2[:, 0], grid2[:, 1])
@@ -69,63 +106,67 @@ def generateTrainingData():
     if USE_OBS:
         val1 = H1(U(grid1[:, 0], grid1[:, 1]))
         val2 = H2(U(grid2[:, 0], grid2[:, 1]))
+        
+    if TWO_GRID:
+        val = torch.cat((val1, val2), dim=0)
+    else:
+        val = val1
 
-    edge_index1 = generateEdgeIndex(50)
-    edge_index2 = generateEdgeIndex(10)
+    edge_index = generateEdgeIndex(grid)
     
-    coordinate1 = grid1.clone()
-    coordinate2 = grid2.clone()
-
-    feature11 = processFeature(grid1, val1, coordinate1)
-    feature12 = processFeature(grid2, val2, coordinate1)
+    coordinate = grid.clone()
+    feature = processFeature(grid, val, coordinate)
 
     padding1 = torch.zeros_like(val1)
     label1 = torch.stack((val1, padding1), dim=1)
 
-    feature21 = processFeature(grid1, val1, coordinate2)
-    feature22 = processFeature(grid2, val2, coordinate2)
-
     padding2 = torch.ones_like(val2)
     label2 = torch.stack((val2, padding2), dim=1)
+    
+    label = torch.cat((label1, label2), dim=0)
 
     training_data = []
-
-    for i in range(coordinate1.shape[0]):
-        training_data.append(MyData(feature11[i], feature12[i], edge_index1, edge_index2, label1[i]))
-
-    if TWO_GRID:
-        for i in range(coordinate2.shape[0]):
-            training_data.append(MyData(feature21[i], feature22[i], edge_index1, edge_index2, label2[i]))
+    
+    for i in range(coordinate.shape[0]):
+        training_data.append(MyData(feature[i], edge_index, label[i]))
 
     return training_data
 
 def generateTestingData():
-    grid1 = generateGrid(50)
-    grid2 = generateGrid(10)
-
+    grid1 = generateGrid(50, 0.2, 10)
+    grid2 = generateGrid(10, 0.5, 9.5)
+    
+    if TWO_GRID:
+        grid = torch.cat((grid1, grid2), dim=0)
+    else:
+        grid = generateGridOne()
+    
     val1 = U(grid1[:, 0], grid1[:, 1])
     val2 = U(grid2[:, 0], grid2[:, 1])
-    
+
     if USE_OBS:
         val1 = H1(U(grid1[:, 0], grid1[:, 1]))
         val2 = H2(U(grid2[:, 0], grid2[:, 1]))
-
-    edge_index1 = generateEdgeIndex(50)
-    edge_index2 = generateEdgeIndex(10)
+        
+    if TWO_GRID:
+        val = torch.cat((val1, val2), dim=0)
+    else:
+        val = val1
+        
+    edge_index = generateEdgeIndex(grid)
 
     x = torch.rand(TEST_NUM) * 10
     y = torch.rand(TEST_NUM) * 10
 
     coordinate = torch.stack((x, y), dim=1)
 
-    feature1 = processFeature(grid1, val1, coordinate)
-    feature2 = processFeature(grid2, val2, coordinate)
+    feature = processFeature(grid, val, coordinate)
 
     testing_data = []
 
     for i in range(coordinate.shape[0]):
-        testing_data.append(MyData(feature1[i], feature2[i], edge_index1, edge_index2))
-
+        testing_data.append(MyData(feature[i], edge_index))
+        
     return testing_data, coordinate
 
 def prepareForPlot(model, data, coordinate):

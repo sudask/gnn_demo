@@ -16,3 +16,6 @@ Now a potential approach is: building two models, using weighted sum of these tw
 
 12.5
 Now the CompleteGNN to solve the full question is set. Just run main.py, you will get a loss curve and a figure. The potential approach proves good. Although the two grids generate two results in which one is better than the other, mixture of these two gives a lower loss averaged on all training data. 0.001 is an appropriate learning rate for now. But I dont know whether the result itself is good -- will it outperform bilinear interpolation?
+
+12.18
+Changed the smaller grid to ensure that these two grids do not interlap. Modified the approach to use different grids. Intuitively, it gives a better result when use two grids to simulate. But in previous version, it was not the case. There was also no testing case with one grid and use observations, so when results appeared to be poor using two grids, we cannot figure out what's the problem from.

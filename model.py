@@ -4,31 +4,27 @@ from torch_geometric.nn import GCNConv
 class CompleteGNN(nn.Module):
     def __init__(self):
         super(CompleteGNN, self).__init__()
-        self.conv11 = GCNConv(2, 8)
-        self.conv21 = GCNConv(8, 1)
-        self.conv12 = GCNConv(2, 8)
-        self.conv22 = GCNConv(8, 1)
-        self.fc1 = nn.Linear(2500, 1)
-        self.fc2 = nn.Linear(100, 1)
+        self.conv1 = GCNConv(2, 4)
+        self.conv2 = GCNConv(4, 8)
+        self.conv3 = GCNConv(8, 4)
+        self.conv4 = GCNConv(4, 1)
+        if TWO_GRID:
+            self.fc = nn.Linear(2600, 1)
+        else:
+            self.fc = nn.Linear(2500, 1)
 
     def forward(self, data):
-        feature1, edge_index1, feature2, edge_index2 = data.feature1, data.edge_index1, data.feature2, data.edge_index2
+        feature, edge_index = data.feature, data.edge_index
 
-        feature1 = self.conv11(feature1, edge_index1)
-        feature1 = torch.tanh(feature1)
-        feature1 = self.conv21(feature1, edge_index1)
-        feature1 = torch.tanh(feature1)
-        feature1 = feature1.squeeze()
-        x1 = self.fc1(feature1)
+        feature = self.conv1(feature, edge_index)
+        feature = torch.tanh(feature)
+        feature = self.conv2(feature, edge_index)
+        feature = torch.tanh(feature)
+        feature = self.conv3(feature, edge_index)
+        feature = torch.tanh(feature)
+        feature = self.conv4(feature, edge_index)
+        feature = torch.tanh(feature)
+        feature = feature.squeeze()
+        feature = self.fc(feature)
 
-        feature2 = self.conv12(feature2, edge_index2)
-        feature2 = torch.tanh(feature2)
-        feature2 = self.conv22(feature2, edge_index2)
-        feature2 = torch.tanh(feature2)
-        feature2 = feature2.squeeze()
-        x2 = self.fc2(feature2)
-
-        if TWO_GRID:
-            return x1.squeeze() + x2.squeeze()
-        else:
-            return x1.squeeze()
+        return feature.squeeze()

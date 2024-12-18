@@ -8,7 +8,7 @@ import os
 from matplotlib import pyplot as plt
 
 # Parameters
-EPOCH = 200
+EPOCH = 50
 # for reciprocal
 # LEARING_RATE = 0.0005
 
@@ -21,12 +21,13 @@ EPOCH = 200
 # for full question
 LEARING_RATE = 0.001
 
+DIST_THRES = 0.3
 SAVE_DIR = "checkpoints"
 
-TWO_GRID = True
+TWO_GRID = False
 USE_OBS = True
 RECIPROCAL = False
-PTH_FILE_NAME = "full.pth"
+PTH_FILE_NAME = "test.pth"
 
 TEST_NUM = 2000
 
