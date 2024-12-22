@@ -8,7 +8,7 @@ import os
 from matplotlib import pyplot as plt
 
 # Parameters
-EPOCH = 50
+EPOCH = 100
 # for reciprocal
 # LEARING_RATE = 0.0005
 
@@ -24,12 +24,13 @@ LEARING_RATE = 0.001
 DIST_THRES = 0.3
 SAVE_DIR = "checkpoints"
 
-TWO_GRID = False
+TWO_GRID = True
 USE_OBS = True
 RECIPROCAL = False
-PTH_FILE_NAME = "test.pth"
+PTH_FILE_NAME = ("two_grid" if TWO_GRID else "one_grid") + ".pth"
 
 TEST_NUM = 2000
+EDGE_INDEX_CACHE_NAME = "edge_index/" + ("two_grid.json" if TWO_GRID else "one_grid.json")
 
 def U(x, y):
     term1 = torch.sin(x + np.cos(x + y))

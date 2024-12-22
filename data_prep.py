@@ -30,40 +30,22 @@ def generateGridOne(size=50, left_end=0.2, right_end=10):
     
     return grid
 
-def generateEdgeIndex(grid, file_path="edge_index_cache.json", force_update=False):
-    if os.path.exists(file_path) and not force_update:
-        try:
-            with open(file_path, "r") as file:
-                edge_index_cache = json.load(file)
-            return torch.tensor(edge_index_cache, dtype=torch.long).t().contiguous()
-        except json.JSONDecodeError as e:
-            print(f"读取文件 {file_path} 时出现JSON解析错误: {e}")
-            return None
-        except Exception as e:
-            print(f"读取文件 {file_path} 时出现未知错误: {e}")
-            return None
-
+def generateEdgeIndex(grid, file_path=EDGE_INDEX_CACHE_NAME):
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            edge_index_cache = json.load(file)
+        return torch.tensor(edge_index_cache, dtype=torch.long).t().contiguous()
+    
     edge_index_cache = []
-    try:
-        for i in range(len(grid)):
-            for j in range(len(grid)):
-                if torch.norm(grid[i] - grid[j]) < DIST_THRES:
-                    edge_index_cache.append([i, j])
-    except TypeError as e:
-        print(f"输入数据类型有误: {e}")
-        return None
-    except Exception as e:
-        print(f"出现未知错误: {e}")
-        return None
+    for i in range(len(grid)):
+        for j in range(len(grid)):
+            if torch.norm(grid[i] - grid[j]) < DIST_THRES:
+                edge_index_cache.append([i, j])
+    
+    with open(file_path, "w") as file:
+        json.dump(edge_index_cache, file)
 
-    try:
-        with open(file_path, "w") as file:
-            json.dump(edge_index_cache, file)
-    except IOError as e:
-        print(f"保存文件 {file_path} 时出现I/O错误: {e}")
-        return None
-
-    return torch.tensor(edge_index_cache, dtype=torch.long).t().contiguous() if edge_index_cache else None
+    return torch.tensor(edge_index_cache, dtype=torch.long).t().contiguous()
 
 class MyData:
     def __init__(self, feature, edge_index, label=None):
