@@ -73,3 +73,26 @@ def plot_compare_3d(coordinate, real_val, predict_val):
     ax2.legend()
 
     plt.show()
+
+def plot_continuous(coordinate, real_val, predict_val):
+    fig = plt.figure(figsize=(12, 5))
+    ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+    ax2 = fig.add_subplot(1, 2, 2, projection='3d')
+
+    # 绘制真实值的连续图像
+    ax1.plot_trisurf(coordinate[:, 0], coordinate[:, 1], real_val, cmap='viridis', alpha=0.6, label='Real Values')
+    ax1.set_title('Real Values')
+    ax1.set_xlabel('X')
+    ax1.set_ylabel('Y')
+    ax1.set_zlabel('Z')
+    ax1.legend()
+
+    # 绘制预测值的连续图像
+    ax2.plot_trisurf(coordinate[:, 0], coordinate[:, 1], predict_val, cmap='plasma', alpha=0.6, label='Predict Values')
+    ax2.set_title('Predict Values')
+    ax2.set_xlabel('X')
+    ax2.set_ylabel('Y')
+    ax2.set_zlabel('Z')
+    ax2.legend()
+
+    plt.show()

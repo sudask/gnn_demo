@@ -11,3 +11,4 @@ coordinate, real_val, predict_val = prepareForPlot(model, testing_data, coordina
 plotDiff(coordinate, real_val, predict_val)
 plot3d(coordinate, real_val, predict_val)
 plot_compare_3d(coordinate, real_val, predict_val)
+plot_continuous(coordinate, real_val, predict_val)

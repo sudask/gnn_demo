@@ -9,10 +9,13 @@ def U(x, y):
     return term1 + term2 - term3
 
 def H1(u):
-    return u ** 2 - u
+    return u**3 / 4
+
+# def H2(u):
+#     return torch.cos(u - torch.sin(u))
 
 def H2(u):
-    return np.cos(u - np.sin(u))
+    return np.cos(u / 2 + 4 - np.sin(u / 2 + 4))
 
 x = np.linspace(0.2, 10, 50)
 y = np.linspace(0.2, 10, 50)
@@ -26,8 +29,8 @@ y1 = H1(u)
 y2 = H2(u)
 
 plt.figure()  # 新起一个图形
-plt.plot(u, y1, label='H1(u) = u**2 - u', color='blue')
-plt.plot(u, y2, label='H2(u) = cos(u - sin(u))', color='red')
+plt.plot(u, y1, label='H1(u)', color='blue')
+plt.plot(u, y2, label='H2(u)', color='red')
 plt.title('Function Plots')
 plt.xlabel('u')
 plt.ylabel('y')
@@ -84,23 +87,23 @@ plt.ylabel("y")
 
 levels = contour_obs.levels
 # 找到所有level为0的等高线索引
-level_0_indices = np.where(levels == 0)[0]
-index = 16
-all_segments = contour_obs.allsegs[1]
-segment = all_segments[index]
-all_points = segment
-selected_indices = np.random.choice(len(all_points), 8, replace=False)
-selected_points = all_points[selected_indices]
+# level_0_indices = np.where(levels == 0)[0]
+# index = 16
+# all_segments = contour_obs.allsegs[1]
+# segment = all_segments[index]
+# all_points = segment
+# selected_indices = np.random.choice(len(all_points), 8, replace=False)
+# selected_points = all_points[selected_indices]
 
 # 在u_original对应的等高线图上标记点
-plt.subplot(1, 2, 1)
-plt.scatter(selected_points[:, 0], selected_points[:, 1], c='r', marker='o', label='Selected Points')
-plt.legend()
+# plt.subplot(1, 2, 1)
+# plt.scatter(selected_points[:, 0], selected_points[:, 1], c='r', marker='o', label='Selected Points')
+# plt.legend()
 
 # 在obs对应的等高线图上标记同样的点（注意正如你说大概率不在同一条等高线上）
-plt.subplot(1, 2, 2)
-plt.scatter(selected_points[:, 0], selected_points[:, 1], c='r', marker='o', label='Selected Points')
-plt.legend()
+# plt.subplot(1, 2, 2)
+# plt.scatter(selected_points[:, 0], selected_points[:, 1], c='r', marker='o', label='Selected Points')
+# plt.legend()
 
 plt.tight_layout()
 plt.show()

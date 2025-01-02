@@ -104,9 +104,11 @@ def generateTrainingData():
 
     padding2 = torch.ones_like(val2)
     label2 = torch.stack((val2, padding2), dim=1)
-    
-    label = torch.cat((label1, label2), dim=0)
-
+    if TWO_GRID:
+        label = torch.cat((label1, label2), dim=0)
+    else:
+        label = label1
+        
     training_data = []
     
     for i in range(coordinate.shape[0]):
@@ -137,10 +139,13 @@ def generateTestingData():
         
     edge_index = generateEdgeIndex(grid)
 
-    x = torch.rand(TEST_NUM) * 10
-    y = torch.rand(TEST_NUM) * 10
+    # x = torch.linspace(0, 10, 201)
+    # y = torch.linspace(0, 10, 201)
+    
+    # x, y = torch.meshgrid(x, y, indexing='ij')
 
-    coordinate = torch.stack((x, y), dim=1)
+    # coordinate = torch.stack((x, y), dim=1)
+    coordinate = generateGrid(60, 0, 10)
 
     feature = processFeature(grid, val, coordinate)
 

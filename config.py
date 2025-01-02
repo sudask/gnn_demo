@@ -38,11 +38,17 @@ def U(x, y):
     term3 = 0.1 * torch.sin(2 * x - 3 * y) * torch.cos(4 * y - 3 * x)
     return term1 + term2 - term3
 
+# def H1(u):
+#     return (u ** 2 - u) / 3
+
 def H1(u):
-    return u ** 2 - u
+    return u**3 / 4
+
+# def H2(u):
+#     return torch.cos(u - torch.sin(u))
 
 def H2(u):
-    return torch.cos(u - torch.sin(u))
+    return torch.cos(u / 2 + 4 - torch.sin(u / 2 + 4))
 
 def observeOperator(u, label):
     if label == 0:
