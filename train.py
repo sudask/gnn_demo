@@ -20,8 +20,9 @@ def trainAndPlot(model, training_data, optimizer, criterion):
                 total_loss = loss
             else:
                 total_loss += loss
-            loss.backward()
-            optimizer.step()
+            if loss > 0.01:
+                loss.backward()
+                optimizer.step()
 
         average_loss = total_loss.item() / n
         loss_history.append(average_loss)
