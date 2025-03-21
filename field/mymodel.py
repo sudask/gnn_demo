@@ -2,6 +2,12 @@ import torch
 from torch import nn
 from torch_geometric.nn import GCNConv
 
+class MyData:
+    def __init__(self, feature, edge_index, vals = None):
+        self.feature = feature
+        self.edge_index = edge_index
+        self.vals = vals
+
 class MyModel(nn.Module):
     def __init__(self):
         super(MyModel, self).__init__()
