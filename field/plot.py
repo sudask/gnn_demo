@@ -11,6 +11,15 @@ def plotObs(lat, lon, obs_station):
     plt.grid(True)
     plt.show()
 
+def plotError(coordinate, val):
+    fig, ax = plt.subplots(1, 1, figsize=(8, 6))
+
+    scatter = ax.scatter(coordinate[:, 0], coordinate[:, 1], c=val, cmap='viridis')
+    ax.set_title('Difference between Real and Predict Values')
+    fig.colorbar(scatter, ax=ax)
+
+    plt.show()
+
 def plotDiff(coordinate, real_val, predict_val):
     diff_val = real_val - predict_val
 
