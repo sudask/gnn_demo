@@ -1,23 +1,6 @@
 import xarray as xr  
 import numpy as np
 
-ds = xr.open_dataset("ncdata/Combined_TAIR_1.nc", engine="netcdf4") 
-
-latitude = ds['LAT'].values
-longitude = ds['LON'].values
-tair = ds['TAIR'].values
-timelist = ds['timelist'].values
-interp_data = ds['interp_data'].values
-targLatLon = ds['targLatLon'].values
-
-lat = latitude[100:150]
-lon = longitude[100:150]
-real_vals = tair[:, 100:150, 100:150]
-
-valid_indices = np.where((targLatLon[:, 0] <= lat[-1]) & (targLatLon[:, 1] <= lon[-1]) & (targLatLon[:, 0] >= lat[0]) & (targLatLon[:, 1] >= lon[0]))[0]
-obs_station = targLatLon[valid_indices, :]
-obs = interp_data[:, valid_indices]
-
 def generateEdgeIndex(obs_station):
     edge_index = []
     for i in range(len(obs_station)):
@@ -27,12 +10,31 @@ def generateEdgeIndex(obs_station):
     
     return np.array(edge_index).T
 
-edge_index = generateEdgeIndex(obs_station)
+def prepareNcdata(block_size = 50):
+    ds = xr.open_dataset("ncdata/Combined_TAIR_1.nc", engine="netcdf4")
+    latitude = ds['LAT'].values # 320
+    longitude = ds['LON'].values # 416
+    tair = ds['TAIR'].values # 200 * 320 * 416, val at each time each pos
+    timelist = ds['timelist'].values # 200
+    interp_data = ds['interp_data'].values # 200 * 1754, val on 1754 obs stations at each time
+    targLatLon = ds['targLatLon'].values # 1754 * 2, obs stations' pos
 
-np.save("data/edge_index.npy", edge_index)
+    print(f"Amount of latitudes and longitudes: {block_size}")
+    lat = latitude[30:30 + block_size]
+    lon = longitude[120:120 + block_size]
+    real_vals = tair[:, 30:30 + block_size, 120:120 + block_size]
 
-np.save("data/lat.npy", lat)
-np.save("data/lon.npy", lon)
-np.save("data/vals.npy", real_vals)
-np.save("data/station.npy", obs_station)
-np.save("data/obs.npy", obs)
+    valid_indices = np.where((targLatLon[:, 0] <= lat[-1]) & (targLatLon[:, 1] <= lon[-1]) & (targLatLon[:, 0] >= lat[0]) & (targLatLon[:, 1] >= lon[0]))[0]
+    obs_station = targLatLon[valid_indices, :]
+    obs = interp_data[:, valid_indices]
+    print(f"Amount of obs stations: {obs.shape[1]}")
+
+    edge_index = generateEdgeIndex(obs_station)
+
+    np.save(f"data/edge_index_{block_size}.npy", edge_index)
+
+    np.save(f"data/lat_{block_size}.npy", lat)
+    np.save(f"data/lon_{block_size}.npy", lon)
+    np.save(f"data/vals_{block_size}.npy", real_vals)
+    np.save(f"data/station_{block_size}.npy", obs_station)
+    np.save(f"data/obs_{block_size}.npy", obs)
