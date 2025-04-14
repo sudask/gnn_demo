@@ -30,8 +30,9 @@ class model19(nn.Module):
 class model94(nn.Module):
     def __init__(self):
         super(model94, self).__init__()
-        self.conv1 = GCNConv(1, 4)
-        self.conv2 = GCNConv(4, 1)
+        self.conv1 = GCNConv(3, 6)
+        self.conv2 = GCNConv(6, 1)
+        self.fc1 = nn.Linear(94, 94)
         self.fc = nn.Linear(94, 6400)
 
     def forward(self, data):
@@ -43,6 +44,8 @@ class model94(nn.Module):
         feature = torch.tanh(feature)
 
         feature = feature.squeeze()
+
+        feature = self.fc1(feature)
         feature = self.fc(feature)
 
         return feature.squeeze()
