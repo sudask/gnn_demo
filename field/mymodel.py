@@ -45,7 +45,10 @@ class model94(nn.Module):
 
         feature = feature.squeeze()
 
-        feature = self.fc1(feature)
+        # feature = self.fc1(feature)
+        # feature = torch.tanh(feature)
+        # feature = self.fc2(feature)
+        # feature = torch.tanh(feature)
         feature = self.fc(feature)
 
         return feature.squeeze()

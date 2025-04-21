@@ -3,13 +3,14 @@ from mymodel import*
 from plot import*
 from train import*
 from read_and_save_ncdata import*
+from torch.optim.lr_scheduler import StepLR
 
 BLOCK_SIZE = 80 # differenct size should use different model
-NUM_TRAINING_DATA = 1500
+NUM_TRAINING_DATA = 150
 
 # random sample
-random.seed(42)
-numbers = list(range(1800))
+# random.seed(42)
+numbers = list(range(180))
 training_indices = random.sample(numbers, NUM_TRAINING_DATA)
 testing_indices = [i for i in numbers if i not in set(training_indices)]
 
@@ -54,10 +55,11 @@ if (obs.shape[1] == 415):
 
 if (obs.shape[1] == 19):
     model = model19()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.1)
+scheduler = StepLR(optimizer, step_size=50, gamma=0.7)
 criterion = nn.MSELoss()
 
-trainAndPlot(model, training_data, optimizer, criterion)
+trainAndPlot(model, training_data, optimizer, scheduler, criterion)
 
 checkpoint = torch.load("checkpoints/test.pth", weights_only=True)
 model.load_state_dict(checkpoint)
@@ -77,7 +79,7 @@ for i in testing_indices:
     error = (real_val - predict_val) ** 2
     total_error += error
 
-avg_error = total_error / 300
+avg_error = total_error / 30
 print(avg_error.shape)
 print("Average mse: ", np.mean(avg_error))
 
