@@ -3,9 +3,10 @@ from torch import nn
 from torch_geometric.nn import GCNConv
 
 class MyData:
-    def __init__(self, feature, edge_index, vals = None):
+    def __init__(self, feature, edge_index, edge_weight, vals = None):
         self.feature = feature
         self.edge_index = edge_index
+        self.edge_weight = edge_weight
         self.vals = vals
 
 class model19(nn.Module):
@@ -36,11 +37,11 @@ class model94(nn.Module):
         self.fc = nn.Linear(94, 6400)
 
     def forward(self, data):
-        feature, edge_index = data.feature, data.edge_index
+        feature, edge_index, edge_weight = data.feature, data.edge_index, data.edge_weight
 
-        feature = self.conv1(feature, edge_index)
+        feature = self.conv1(feature, edge_index, edge_weight=edge_weight)
         feature = torch.tanh(feature)
-        feature = self.conv2(feature, edge_index)
+        feature = self.conv2(feature, edge_index, edge_weight=edge_weight)
         feature = torch.tanh(feature)
 
         feature = feature.squeeze()

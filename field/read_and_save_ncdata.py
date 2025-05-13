@@ -10,6 +10,20 @@ def generateEdgeIndex(obs_station):
     
     return np.array(edge_index).T
 
+def generateEdgeIndexAndWeight(obs_station):
+    edge_index = []
+    edge_weight = []
+    for i in range(len(obs_station)):
+        for j in range(len(obs_station)):
+            distance = np.linalg.norm(obs_station[i] - obs_station[j])
+            if distance < 1.5:
+                edge_index.append([i, j])
+                edge_weight.append(1.0 / (distance + 1e-5))  # 避免除以0
+                
+    edge_index = np.array(edge_index).T
+    edge_weight = np.array(edge_weight)
+    return edge_index, edge_weight
+
 def prepareNcdata(block_size = 50):
     ds = xr.open_dataset("ncdata/Combined_TAIR_1.nc", engine="netcdf4")
     latitude = ds['LAT'].values # 320

@@ -34,7 +34,7 @@ obs_station = all_station[valid_indices, :]
 obs = all_obs[training_indices][:, valid_indices]
 print(f"Amount of obs stations: {obs.shape[1]}")
 
-edge_index = generateEdgeIndex(obs_station)
+edge_index, edge_weight = generateEdgeIndexAndWeight(obs_station)
 # plotObs(lat, lon, obs_station)
 
 training_data = []
@@ -44,10 +44,11 @@ for i in range(NUM_TRAINING_DATA):
     #--- for no lat and lon info
     # feature = torch.from_numpy(obs[i]).reshape(-1, 1)
     vals = torch.from_numpy(real_vals[i].reshape(-1))
-    training_data.append(MyData(feature, torch.from_numpy(edge_index), vals))
+    training_data.append(MyData(feature, torch.from_numpy(edge_index),torch.from_numpy(edge_weight), vals))
 
 model = None
 if (obs.shape[1] == 94):
+    print("Model: 94")
     model = model94()
 
 if (obs.shape[1] == 415):
@@ -70,7 +71,7 @@ for i in testing_indices:
     feature = torch.from_numpy(np.concatenate((obs_reshaped, obs_station), axis=1))
     #--- for no lat and lon info
     # feature = torch.from_numpy(all_obs[i, valid_indices]).reshape(-1, 1)
-    testing_data = MyData(feature, torch.from_numpy(edge_index))
+    testing_data = MyData(feature, torch.from_numpy(edge_index), torch.from_numpy(edge_weight))
 
     predict = model(testing_data)
     predict_val = predict.detach().numpy()
