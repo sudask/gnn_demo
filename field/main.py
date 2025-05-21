@@ -60,29 +60,17 @@ edge_index = generateEdgeIndex(obs_station)
 
 # exit()
 
-training_data = []
-validation_data = []
-testing_data = []
-
-for i in training_indices:
-    obs_reshaped = all_obs[i, valid_indices].reshape(-1, 1)
-    feature = torch.from_numpy(np.concatenate((obs_reshaped, obs_station), axis=1))
-    # no lat and lon info:
-    # feature = torch.from_numpy(obs[i]).reshape(-1, 1)
-    vals = torch.from_numpy(all_val[i, 30:30 + BLOCK_SIZE, 120:120 + BLOCK_SIZE].reshape(-1))
-    training_data.append(MyData(feature, torch.from_numpy(edge_index), vals))
-
-for i in validation_indices:
+processed_data = []
+for i in range(NUM_DATA):
     obs_reshaped = all_obs[i, valid_indices].reshape(-1, 1)
     feature = torch.from_numpy(np.concatenate((obs_reshaped, obs_station), axis=1))
     vals = torch.from_numpy(all_val[i, 30:30 + BLOCK_SIZE, 120:120 + BLOCK_SIZE].reshape(-1))
-    validation_data.append(MyData(feature, torch.from_numpy(edge_index), vals))
+    processed_data.append(MyData(feature, torch.from_numpy(edge_index), vals))
 
-for i in testing_indices:
-    obs_reshaped = all_obs[i, valid_indices].reshape(-1, 1)
-    feature = torch.from_numpy(np.concatenate((obs_reshaped, obs_station), axis=1))
-    vals = torch.from_numpy(all_val[i, 30:30 + BLOCK_SIZE, 120:120 + BLOCK_SIZE].reshape(-1))
-    testing_data.append(MyData(feature, torch.from_numpy(edge_index), vals))
+
+training_data = [processed_data[i] for i in training_indices]
+validation_data = [processed_data[i] for i in validation_indices]
+testing_data = [processed_data[i] for i in testing_indices]
 
 # ======================== choose model ========================
 
@@ -99,7 +87,6 @@ if (obs.shape[1] == 19):
 # ======================== set nessesary components ========================
 
 optimizer = optim.Adam(model.parameters(), lr=0.1)
-# scheduler = StepLR(optimizer, step_size=50, gamma=0.7)
 criterion = nn.MSELoss()
 
 # ======================== different schedulers ========================
@@ -147,6 +134,13 @@ print("Average mse: ", np.mean(avg_error))
 
 plotLossCurve(loss_history)
 plotError(coordinate, avg_error)
-# plot3d(coordinate, real_val, predict_val)
+
+idx = 0
+real_val = training_data[idx].vals.detach().numpy()
+predict_val = model(training_data[idx]).detach().numpy()
+obs_info = training_data[idx].feature.detach().numpy()
+print(obs_info.shape)
+
+plot3d(coordinate, real_val, predict_val, obs_info)
 # plot_compare_3d(coordinate, real_val, predict_val)
 

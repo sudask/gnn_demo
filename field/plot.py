@@ -67,15 +67,17 @@ def plot(coordinate, real_val, predict_val):
     
 from mpl_toolkits.mplot3d import Axes3D
 
-def plot3d(coordinate, real_val, predict_val):
+def plot3d(coordinate, real_val, predict_val, obs_info):
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111, projection='3d')
 
     mse = np.mean((real_val - predict_val) ** 2)
     print(f"均方误差(MSE): {mse}")
 
-    ax.scatter(coordinate[:, 0], coordinate[:, 1], real_val, c='blue', label='Real Values', alpha=0.6)
-    ax.scatter(coordinate[:, 0], coordinate[:, 1], predict_val, c='red', label='Predict Values', alpha=0.6)
+    ax.scatter(coordinate[:, 0], coordinate[:, 1], real_val, c='blue', label='Real Values', alpha=0.1)
+    # ax.scatter(coordinate[:, 0], coordinate[:, 1], predict_val, c='red', label='Predict Values', alpha=0.1)
+
+    ax.scatter(obs_info[:, 1], obs_info[:, 2], obs_info[:, 0], marker='s', c='g', label='obs station', alpha=0.9)
 
     ax.set_title('Real and Predict Values in 3D')
     ax.set_xlabel('X')
