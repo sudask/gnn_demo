@@ -7,7 +7,6 @@ from torch.optim.lr_scheduler import StepLR
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.optim.lr_scheduler import CyclicLR
 
-
 # ======================== generate indices of different sets ========================
 
 random.seed(42)
@@ -57,7 +56,9 @@ print("Data info: ")
 print(f"training size: {train_size} | validation size: {validate_size} | testing size: {test_size} | obs amount: {obs.shape[1]}")
 
 edge_index = generateEdgeIndex(obs_station)
-# plotObs(lat, lon, obs_station)
+# plotObs(lat, lon, obs_station, edge_index)
+
+# exit()
 
 training_data = []
 validation_data = []
@@ -118,14 +119,19 @@ scheduler2 = CyclicLR(
     mode='triangular'
 )
 
+scheduler3 = StepLR(optimizer, step_size=200, gamma=0.7)
+
 # ======================== traing and svae model ========================
 
-loss_history = train(model, training_data, validation_data, optimizer, scheduler2, criterion)
+loss_history = train(model, training_data, validation_data, optimizer, scheduler3, criterion)
 
 # ======================== display results ========================
 
 checkpoint = torch.load("checkpoints/test.pth", weights_only=True)
 model.load_state_dict(checkpoint)
+
+x, y = np.meshgrid(lat, lon, indexing='ij')
+coordinate = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1)), axis=1)
 
 total_error = np.zeros(BLOCK_SIZE ** 2)
 for data in testing_data:
@@ -138,9 +144,6 @@ for data in testing_data:
 
 avg_error = total_error / 30
 print("Average mse: ", np.mean(avg_error))
-
-x, y = np.meshgrid(lat, lon, indexing='ij')
-coordinate = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1)), axis=1)
 
 plotLossCurve(loss_history)
 plotError(coordinate, avg_error)

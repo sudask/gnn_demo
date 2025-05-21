@@ -8,10 +8,17 @@ def plotLossCurve(loss_history):
     plt.title('Training Loss Curve')
     plt.show()
 
-def plotObs(lat, lon, obs_station):
+def plotObs(lat, lon, obs_station, edge_index):
     plt.figure(figsize=(10, 8))
     plt.plot([lat[0], lat[-1], lat[-1], lat[0], lat[0]], [lon[0], lon[0], lon[-1], lon[-1], lon[0]], 'b-', label='Latitude-Longitude Range')
     plt.scatter(obs_station[:, 0], obs_station[:, 1], color='r', marker='o', label='Observation Stations')
+
+    for k in range(edge_index.shape[1]):
+        i, j = edge_index[0, k], edge_index[1, k]
+        plt.plot([obs_station[i, 0], obs_station[j, 0]],
+                [obs_station[i, 1], obs_station[j, 1]],
+                'gray', alpha=0.3, linewidth=0.5)
+        
     plt.xlabel('Latitude')
     plt.ylabel('Longitude')
     plt.title('Observation Stations within Latitude-Longitude Range')

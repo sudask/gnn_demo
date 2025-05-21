@@ -5,7 +5,7 @@ def generateEdgeIndex(obs_station):
     edge_index = []
     for i in range(len(obs_station)):
         for j in range(len(obs_station)):
-            if np.linalg.norm(obs_station[i] - obs_station[j]) < 1.5:
+            if np.linalg.norm(obs_station[i] - obs_station[j]) < 1.0:
                 edge_index.append([i, j])
     
     return np.array(edge_index).T

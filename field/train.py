@@ -4,7 +4,7 @@ def train(model, training_data, validation_data, optimizer, scheduler, criterion
     start = time.time()
     loss_history = []
 
-    for epoch in range(100):
+    for epoch in range(2000):
         model.train()
         random.shuffle(training_data)
         epoch_loss = 0.0
