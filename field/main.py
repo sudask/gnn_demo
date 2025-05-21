@@ -4,6 +4,8 @@ from plot import*
 from train import*
 from read_and_save_ncdata import*
 from torch.optim.lr_scheduler import StepLR
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.optim.lr_scheduler import CyclicLR
 
 
 # ======================== generate indices of different sets ========================
@@ -96,12 +98,29 @@ if (obs.shape[1] == 19):
 # ======================== set nessesary components ========================
 
 optimizer = optim.Adam(model.parameters(), lr=0.1)
-scheduler = StepLR(optimizer, step_size=50, gamma=0.7)
+# scheduler = StepLR(optimizer, step_size=50, gamma=0.7)
 criterion = nn.MSELoss()
+
+# ======================== different schedulers ========================
+
+scheduler1 = ReduceLROnPlateau(
+    optimizer, 
+    mode='min',
+    factor=0.8,
+    patience=5
+)
+
+scheduler2 = CyclicLR(
+    optimizer,
+    base_lr=0.01,
+    max_lr=0.1,
+    step_size_up=100,
+    mode='triangular'
+)
 
 # ======================== traing and svae model ========================
 
-trainAndPlot(model, training_data, optimizer, scheduler, criterion)
+loss_history = train(model, training_data, validation_data, optimizer, scheduler2, criterion)
 
 # ======================== display results ========================
 
@@ -123,6 +142,7 @@ print("Average mse: ", np.mean(avg_error))
 x, y = np.meshgrid(lat, lon, indexing='ij')
 coordinate = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1)), axis=1)
 
+plotLossCurve(loss_history)
 plotError(coordinate, avg_error)
 # plot3d(coordinate, real_val, predict_val)
 # plot_compare_3d(coordinate, real_val, predict_val)

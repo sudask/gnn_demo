@@ -1,5 +1,13 @@
 from config import*
 
+def plotLossCurve(loss_history):
+    start_epoch = 50
+    plt.plot(range(start_epoch, len(loss_history)), loss_history[start_epoch:])
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Training Loss Curve')
+    plt.show()
+
 def plotObs(lat, lon, obs_station):
     plt.figure(figsize=(10, 8))
     plt.plot([lat[0], lat[-1], lat[-1], lat[0], lat[0]], [lon[0], lon[0], lon[-1], lon[-1], lon[0]], 'b-', label='Latitude-Longitude Range')
