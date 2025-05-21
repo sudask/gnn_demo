@@ -56,7 +56,7 @@ obs_station = all_station[valid_indices, :]
 obs = all_obs[training_indices][:, valid_indices]
 print(f"Amount of obs stations: {obs.shape[1]}")
 
-edge_index = generateEdgeIndex(obs_station)
+edge_index, edge_weight = generateEdgeIndexAndWeight(obs_station)
 # plotObs(lat, lon, obs_station)
 
 training_data = []
@@ -87,6 +87,7 @@ for i in testing_indices:
 
 model = None
 if (obs.shape[1] == 94):
+    print("Model: 94")
     model = model94()
 
 if (obs.shape[1] == 415):
