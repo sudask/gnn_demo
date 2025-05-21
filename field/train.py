@@ -25,7 +25,7 @@ def trainAndPlot(model, training_data, optimizer, scheduler, criterion):
 
     print()
     end = time.time()
-    print(f"Training time: {end-start}")
+    print(f"Time: {end-start:.3f}")
     torch.save(model.state_dict(), "checkpoints/test.pth")
 
     plt.plot(np.array(range(51, 201)), loss_history[50:])

@@ -23,10 +23,6 @@ train_size = int(NUM_DATA * train_ratio)
 validate_size = int(NUM_DATA * validate_ratio)
 test_size = NUM_DATA - train_size - validate_size
 
-print(f"Amount of traning data: {train_size}")
-print(f"Amount of validation data: {validate_size}")
-print(f"Amount of testing data: {test_size}")
-
 numbers = list(range(NUM_DATA))
 
 training_indices = random.sample(numbers, train_size)
@@ -54,7 +50,9 @@ real_vals = all_val[training_indices, 30:30 + BLOCK_SIZE, 120:120 + BLOCK_SIZE]
 valid_indices = np.where((all_station[:, 0] <= lat[-1]) & (all_station[:, 1] <= lon[-1]) & (all_station[:, 0] >= lat[0]) & (all_station[:, 1] >= lon[0]))[0]
 obs_station = all_station[valid_indices, :]
 obs = all_obs[training_indices][:, valid_indices]
-print(f"Amount of obs stations: {obs.shape[1]}")
+
+print("Data info: ")
+print(f"training size: {train_size} | validation size: {validate_size} | testing size: {test_size} | obs amount: {obs.shape[1]}")
 
 edge_index = generateEdgeIndex(obs_station)
 # plotObs(lat, lon, obs_station)
