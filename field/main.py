@@ -56,7 +56,7 @@ obs_station = all_station[valid_indices, :]
 obs = all_obs[training_indices][:, valid_indices]
 print(f"Amount of obs stations: {obs.shape[1]}")
 
-edge_index, edge_weight = generateEdgeIndexAndWeight(obs_station)
+edge_index = generateEdgeIndex(obs_station)
 # plotObs(lat, lon, obs_station)
 
 training_data = []
@@ -87,7 +87,6 @@ for i in testing_indices:
 
 model = None
 if (obs.shape[1] == 94):
-    print("Model: 94")
     model = model94()
 
 if (obs.shape[1] == 415):
@@ -121,7 +120,6 @@ for data in testing_data:
     total_error += error
 
 avg_error = total_error / 30
-print(avg_error.shape)
 print("Average mse: ", np.mean(avg_error))
 
 x, y = np.meshgrid(lat, lon, indexing='ij')

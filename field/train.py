@@ -21,11 +21,9 @@ def trainAndPlot(model, training_data, optimizer, scheduler, criterion):
         scheduler.step()
         current_lr = optimizer.param_groups[0]['lr']
 
-        if (epoch + 1) % 1 == 0:
-            print(f'Epoch: {epoch + 1}')
-            print(f'Learning rate = {current_lr}')
-            print(f'Loss: {loss.item()}')
+        print(f'\rEpoch: {epoch+1:3d} | LR: {current_lr:.6f} | Loss: {loss.item():.6f}', end='')
 
+    print()
     end = time.time()
     print(f"Training time: {end-start}")
     torch.save(model.state_dict(), "checkpoints/test.pth")
