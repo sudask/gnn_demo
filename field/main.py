@@ -11,7 +11,10 @@ from torch.optim.lr_scheduler import CyclicLR
 
 random.seed(42)
 
-BLOCK_SIZE = 80 # different size should use different model
+LAT_SIZE = 36 # different size should use different model
+LON_SIZE = 50
+MIN_LAT_INDEX = 142
+MIN_LON_INDEX = 311
 NUM_DATA = 200
 
 # split ratio
@@ -43,10 +46,10 @@ all_time = np.load("data/time.npy").astype(np.float32) # 1995 * 1
 
 # ======================== use indices to genearte data sets ========================
 
-lat = all_lat[30:30 + BLOCK_SIZE]
-lon = all_lon[120:120 + BLOCK_SIZE]
+lat = all_lat[MIN_LAT_INDEX:MIN_LAT_INDEX+LAT_SIZE]
+lon = all_lon[MIN_LON_INDEX:MIN_LON_INDEX+LON_SIZE]
 
-real_vals = all_val[training_indices, 30:30 + BLOCK_SIZE, 120:120 + BLOCK_SIZE]
+real_vals = all_val[training_indices, MIN_LAT_INDEX:MIN_LAT_INDEX+LAT_SIZE, MIN_LON_INDEX:MIN_LON_INDEX+LON_SIZE]
 # choose obs stations belong to required range
 valid_indices = np.where((all_station[:, 0] <= lat[-1]) & (all_station[:, 1] <= lon[-1]) & (all_station[:, 0] >= lat[0]) & (all_station[:, 1] >= lon[0]))[0]
 obs_station = all_station[valid_indices, :]
@@ -64,7 +67,7 @@ processed_data = []
 for i in range(NUM_DATA):
     obs_reshaped = all_obs[i, valid_indices].reshape(-1, 1)
     feature = torch.from_numpy(np.concatenate((obs_reshaped, obs_station), axis=1))
-    vals = torch.from_numpy(all_val[i, 30:30 + BLOCK_SIZE, 120:120 + BLOCK_SIZE].reshape(-1))
+    vals = torch.from_numpy(all_val[i, MIN_LAT_INDEX:MIN_LAT_INDEX+LAT_SIZE, MIN_LON_INDEX:MIN_LON_INDEX+LON_SIZE].reshape(-1))
     processed_data.append(MyData(feature, torch.from_numpy(edge_index), vals))
 
 
@@ -74,19 +77,21 @@ testing_data = [processed_data[i] for i in testing_indices]
 
 # ======================== choose model ========================
 
-model = None
-if (obs.shape[1] == 94):
-    model = model94()
+# model = None
+# if (obs.shape[1] == 94):
+#     model = model94()
 
-if (obs.shape[1] == 415):
-    model = model415()
+# if (obs.shape[1] == 415):
+#     model = model415()
 
-if (obs.shape[1] == 19):
-    model = model19()
+# if (obs.shape[1] == 19):
+#     model = model19()
+
+model = model28()
 
 # ======================== set nessesary components ========================
 
-optimizer = optim.Adam(model.parameters(), lr=0.1)
+optimizer = optim.Adam(model.parameters(), lr=0.01)
 criterion = nn.MSELoss()
 
 # ======================== different schedulers ========================
@@ -106,7 +111,7 @@ scheduler2 = CyclicLR(
     mode='triangular'
 )
 
-scheduler3 = StepLR(optimizer, step_size=200, gamma=0.7)
+scheduler3 = StepLR(optimizer, step_size=150, gamma=0.7)
 
 # ======================== traing and svae model ========================
 
@@ -114,13 +119,13 @@ loss_history = train(model, training_data, validation_data, optimizer, scheduler
 
 # ======================== display results ========================
 
-checkpoint = torch.load("checkpoints/test.pth", weights_only=True)
+checkpoint = torch.load("checkpoints/model28.pth", weights_only=True)
 model.load_state_dict(checkpoint)
 
 x, y = np.meshgrid(lat, lon, indexing='ij')
 coordinate = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1)), axis=1)
 
-total_error = np.zeros(BLOCK_SIZE ** 2)
+total_error = np.zeros(LAT_SIZE * LON_SIZE)
 for data in testing_data:
     predict = model(data)
     predict_val = predict.detach().numpy()
@@ -129,11 +134,11 @@ for data in testing_data:
     error = (real_val - predict_val) ** 2
     total_error += error
 
-avg_error = total_error / 30
+avg_error = total_error / len(testing_data)
 print("Average mse: ", np.mean(avg_error))
 
-plotLossCurve(loss_history)
-plotError(coordinate, avg_error)
+# plotLossCurve(loss_history)
+# plotError(coordinate, avg_error)
 
 idx = 0
 real_val = training_data[idx].vals.detach().numpy()
