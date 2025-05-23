@@ -85,17 +85,7 @@ training_data = [processed_data[i] for i in training_indices]
 validation_data = [processed_data[i] for i in validation_indices]
 testing_data = [processed_data[i] for i in testing_indices]
 
-# ======================== choose model ========================
-
-# model = None
-# if (obs.shape[1] == 94):
-#     model = model94()
-
-# if (obs.shape[1] == 415):
-#     model = model415()
-
-# if (obs.shape[1] == 19):
-#     model = model19()
+# ======================== model ========================
 
 model = GeneralModel(obs.shape[1], LAT_SIZE * LON_SIZE)
 
