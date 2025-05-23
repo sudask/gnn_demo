@@ -1,10 +1,10 @@
 from config import*
 
-def train(model, training_data, validation_data, optimizer, scheduler, criterion):
+def train(model, training_data, validation_data, optimizer, scheduler, criterion, num_epoch, save_path):
     start = time.time()
     loss_history = []
 
-    for epoch in range(1800):
+    for epoch in range(num_epoch):
         model.train()
         random.shuffle(training_data)
         epoch_loss = 0.0
@@ -41,6 +41,6 @@ def train(model, training_data, validation_data, optimizer, scheduler, criterion
     print()
     end = time.time()
     print(f"Time: {end-start:.3f}s")
-    torch.save(model.state_dict(), "checkpoints/model28.pth")
+    torch.save(model.state_dict(), save_path)
 
     return loss_history

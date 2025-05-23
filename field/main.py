@@ -1,21 +1,31 @@
 from config import*
 from mymodel import*
-from plot import*
+from field.for_plot import*
 from train import*
-from read_and_save_ncdata import*
+import json
+from field.for_data import*
 from torch.optim.lr_scheduler import StepLR
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.optim.lr_scheduler import CyclicLR
 
+# ======================== import config info from json ========================
+
+config_file = "./config/config_36_50.json"
+
+with open(config_file) as f:
+    config = json.load(f)
+
+random.seed(config["random_seed"])
+LAT_SIZE = config["lat_size"]
+LON_SIZE = config["lon_size"]
+MIN_LAT_INDEX = config["min_lat_index"]
+MIN_LON_INDEX = config["min_lon_index"]
+NUM_DATA = config["num_data"]
+STEP_SIZE = config["step_size"]
+GAMMA = config["gamma"]
+NUM_EPOCH = config["num_epoch"]
+
 # ======================== generate indices of different sets ========================
-
-random.seed(42)
-
-LAT_SIZE = 36 # different size should use different model
-LON_SIZE = 50
-MIN_LAT_INDEX = 142
-MIN_LON_INDEX = 311
-NUM_DATA = 200
 
 # split ratio
 train_ratio = 0.6
@@ -87,7 +97,7 @@ testing_data = [processed_data[i] for i in testing_indices]
 # if (obs.shape[1] == 19):
 #     model = model19()
 
-model = model28()
+model = GeneralModel(obs.shape[1], LAT_SIZE * LON_SIZE)
 
 # ======================== set nessesary components ========================
 
@@ -111,15 +121,16 @@ scheduler2 = CyclicLR(
     mode='triangular'
 )
 
-scheduler3 = StepLR(optimizer, step_size=150, gamma=0.7)
+scheduler3 = StepLR(optimizer, step_size=STEP_SIZE, gamma=GAMMA)
 
 # ======================== traing and svae model ========================
 
-loss_history = train(model, training_data, validation_data, optimizer, scheduler3, criterion)
+save_path = f"checkpoints/model_{LAT_SIZE}_{LON_SIZE}.pth"
+loss_history = train(model, training_data, validation_data, optimizer, scheduler3, criterion, NUM_EPOCH, save_path)
 
 # ======================== display results ========================
 
-checkpoint = torch.load("checkpoints/model28.pth", weights_only=True)
+checkpoint = torch.load(save_path, weights_only=True)
 model.load_state_dict(checkpoint)
 
 x, y = np.meshgrid(lat, lon, indexing='ij')
@@ -144,7 +155,6 @@ idx = 0
 real_val = training_data[idx].vals.detach().numpy()
 predict_val = model(training_data[idx]).detach().numpy()
 obs_info = training_data[idx].feature.detach().numpy()
-print(obs_info.shape)
 
 plot3d(coordinate, real_val, predict_val, obs_info)
 # plot_compare_3d(coordinate, real_val, predict_val)

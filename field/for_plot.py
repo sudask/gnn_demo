@@ -72,7 +72,7 @@ def plot3d(coordinate, real_val, predict_val, obs_info):
     ax = fig.add_subplot(111, projection='3d')
 
     mse = np.mean((real_val - predict_val) ** 2)
-    print(f"均方误差(MSE): {mse}")
+    print(f"mse: {mse}")
 
     ax.scatter(coordinate[:, 0], coordinate[:, 1], real_val, c='blue', label='Real Values', alpha=0.1)
     # ax.scatter(coordinate[:, 0], coordinate[:, 1], predict_val, c='red', label='Predict Values', alpha=0.1)
