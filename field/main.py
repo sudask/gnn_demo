@@ -1,9 +1,9 @@
+import json
 from config import*
 from mymodel import*
-from field.for_plot import*
+from for_plot import*
+from for_data import*
 from train import*
-import json
-from field.for_data import*
 from torch.optim.lr_scheduler import StepLR
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.optim.lr_scheduler import CyclicLR
@@ -116,7 +116,8 @@ scheduler3 = StepLR(optimizer, step_size=STEP_SIZE, gamma=GAMMA)
 # ======================== traing and svae model ========================
 
 save_path = f"checkpoints/model_{LAT_SIZE}_{LON_SIZE}.pth"
-loss_history = train(model, training_data, validation_data, optimizer, scheduler3, criterion, NUM_EPOCH, save_path)
+# loss_history = train(model, training_data, validation_data, optimizer, scheduler3, criterion, NUM_EPOCH, save_path)
+# plotLossCurve(loss_history)
 
 # ======================== display results ========================
 
@@ -126,20 +127,20 @@ model.load_state_dict(checkpoint)
 x, y = np.meshgrid(lat, lon, indexing='ij')
 coordinate = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1)), axis=1)
 
-total_error = np.zeros(LAT_SIZE * LON_SIZE)
+mse_error = np.zeros(LAT_SIZE * LON_SIZE)
 for data in testing_data:
     predict = model(data)
     predict_val = predict.detach().numpy()
     real_val = data.vals.detach().numpy()
 
-    error = (real_val - predict_val) ** 2
-    total_error += error
+    diff = real_val - predict_val
+    diff2 = diff ** 2
+    mse_error += diff2
 
-avg_error = total_error / len(testing_data)
-print("Average mse: ", np.mean(avg_error))
+mse = mse_error / len(testing_data)
+print("Average mse: ", np.mean(mse_error))
 
-# plotLossCurve(loss_history)
-# plotError(coordinate, avg_error)
+plotError(coordinate, mse)
 
 idx = 0
 real_val = training_data[idx].vals.detach().numpy()

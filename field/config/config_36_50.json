@@ -1,5 +1,5 @@
 {
-    "random_seed" : 4,
+    "random_seed" : 42,
     "lat_size" : 36,
     "lon_size" : 50,
     "min_lat_index" : 142,
