@@ -140,12 +140,12 @@ for data in testing_data:
 mse = mse_error / len(testing_data)
 print("Average mse: ", np.mean(mse_error))
 
-plotError(coordinate, mse)
+# plotError(coordinate, mse)
 
-idx = 0
-real_val = training_data[idx].vals.detach().numpy()
-predict_val = model(training_data[idx]).detach().numpy()
-obs_info = training_data[idx].feature.detach().numpy()
+idx = 300
+real_val = testing_data[idx].vals.detach().numpy()
+predict_val = model(testing_data[idx]).detach().numpy()
+obs_info = testing_data[idx].feature.detach().numpy()
 
 plot3d(coordinate, real_val, predict_val, obs_info)
 # plot_compare_3d(coordinate, real_val, predict_val)

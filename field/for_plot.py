@@ -74,8 +74,8 @@ def plot3d(coordinate, real_val, predict_val, obs_info):
     mse = np.mean((real_val - predict_val) ** 2)
     print(f"mse: {mse}")
 
-    ax.scatter(coordinate[:, 0], coordinate[:, 1], real_val, c='blue', label='Real Values', alpha=0.1)
-    # ax.scatter(coordinate[:, 0], coordinate[:, 1], predict_val, c='red', label='Predict Values', alpha=0.1)
+    # ax.scatter(coordinate[:, 0], coordinate[:, 1], real_val, c='blue', label='Real Values', alpha=0.1)
+    ax.scatter(coordinate[:, 0], coordinate[:, 1], predict_val, c='red', label='Predict Values', alpha=0.1)
 
     ax.scatter(obs_info[:, 1], obs_info[:, 2], obs_info[:, 0], marker='s', c='g', label='obs station', alpha=0.9)
 
