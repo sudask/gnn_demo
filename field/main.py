@@ -2,7 +2,7 @@ import json
 from config import*
 from mymodel import*
 from for_plot import*
-from for_data import*
+from u_data import*
 from train import*
 from torch.optim.lr_scheduler import StepLR
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -68,10 +68,11 @@ obs = all_obs[training_indices][:, valid_indices]
 print("Data info: ")
 print(f"training size: {train_size} | validation size: {validate_size} | testing size: {test_size} | obs amount: {obs.shape[1]}")
 
-edge_index = generateEdgeIndex(obs_station)
-# plotObs(lat, lon, obs_station, edge_index)
+graph_nodes, edge_index = generateEdgeIndex(obs_station, lat, lon)
+plotObs(lat, lon, obs_station, edge_index)
+# plotEdge(graph_nodes, edge_index)
 
-# exit()
+exit()
 
 processed_data = []
 for i in range(NUM_DATA):

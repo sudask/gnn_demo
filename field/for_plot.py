@@ -26,6 +26,23 @@ def plotObs(lat, lon, obs_station, edge_index):
     plt.grid(True)
     plt.show()
 
+def plotEdge(graph_nodes, edge_index):
+    plt.figure(figsize=(10, 8))
+    
+    plt.scatter(graph_nodes[:, 0], graph_nodes[:, 1], color='r', marker='o', label='Graph Nodes', s=5)
+    for k in range(edge_index.shape[1]):
+        i, j = edge_index[0, k], edge_index[1, k]
+        plt.plot([graph_nodes[i, 0], graph_nodes[j, 0]],
+                [graph_nodes[i, 1], graph_nodes[j, 1]],
+                'gray', alpha=0.8, linewidth=0.2)
+        
+    plt.xlabel('Latitude')
+    plt.ylabel('Longitude')
+    plt.title('Adjacent Graph')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
 def plotError(coordinate, val):
     fig, ax = plt.subplots(1, 1, figsize=(8, 6))
 
