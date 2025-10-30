@@ -73,10 +73,31 @@ edge_index = generateEdgeIndex(obs_station)
 
 # exit()
 
+# ========================= encode position =======================
+L = 3
+
+def encodePosition(p, L = 0):
+    if L == 0:
+        return p
+    
+    encodings = [p]
+    
+    for i in range(L):
+        freq = 2.0 ** i * np.pi
+        encodings.append(np.sin(freq * p))
+        encodings.append(np.cos(freq * p))
+        
+    return np.concatenate(encodings, axis=1)
+
+encoded_lat = encodePosition(obs_station[:, 0].reshape(-1, 1), L)
+encoded_lon = encodePosition(obs_station[:, 1].reshape(-1, 1), L)
+
+encoded_obs_pos = np.concatenate((encoded_lat, encoded_lon), axis=1)
+
 processed_data = []
 for i in range(NUM_DATA):
     obs_reshaped = all_obs[i, valid_indices].reshape(-1, 1)
-    feature = torch.from_numpy(np.concatenate((obs_reshaped, obs_station), axis=1))
+    feature = torch.from_numpy(np.concatenate((obs_reshaped, encoded_obs_pos), axis=1))
     vals = torch.from_numpy(all_val[i, MIN_LAT_INDEX:MIN_LAT_INDEX+LAT_SIZE, MIN_LON_INDEX:MIN_LON_INDEX+LON_SIZE].reshape(-1))
     processed_data.append(MyData(feature, torch.from_numpy(edge_index), vals))
 
@@ -87,7 +108,7 @@ testing_data = [processed_data[i] for i in testing_indices]
 
 # ======================== model ========================
 
-model = GeneralModel(obs.shape[1], LAT_SIZE * LON_SIZE)
+model = GeneralModel(obs.shape[1], LAT_SIZE * LON_SIZE, L)
 
 # ======================== set nessesary components ========================
 
@@ -116,7 +137,7 @@ scheduler3 = StepLR(optimizer, step_size=STEP_SIZE, gamma=GAMMA)
 # ======================== traing and svae model ========================
 
 save_path = f"checkpoints/model_{LAT_SIZE}_{LON_SIZE}.pth"
-# loss_history = train(model, training_data, validation_data, optimizer, scheduler3, criterion, NUM_EPOCH, save_path)
+loss_history = train(model, training_data, validation_data, optimizer, scheduler3, criterion, NUM_EPOCH, save_path)
 # plotLossCurve(loss_history)
 
 # ======================== display results ========================

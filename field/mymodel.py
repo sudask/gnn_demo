@@ -9,10 +9,10 @@ class MyData:
         self.vals = vals
     
 class GeneralModel(nn.Module):
-    def __init__(self, numObs, numTarget):
+    def __init__(self, numObs, numTarget, numEncodingLayer):
         super(GeneralModel, self).__init__()
-        self.conv1 = GCNConv(3, 2)
-        self.conv2 = GCNConv(2, 1)
+        self.conv1 = GCNConv(3 + 4 * numEncodingLayer, 2 + 2 * numEncodingLayer)
+        self.conv2 = GCNConv(2 + 2 * numEncodingLayer, 1)
         self.fc1 = nn.Linear(numObs, 128)
         self.fc2 = nn.Linear(128, 128)
         self.fc = nn.Linear(128, numTarget)
