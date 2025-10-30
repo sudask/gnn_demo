@@ -142,7 +142,7 @@ print("Average mse: ", np.mean(mse_error))
 
 # plotError(coordinate, mse)
 
-idx = 300
+idx = 0
 real_val = testing_data[idx].vals.detach().numpy()
 predict_val = model(testing_data[idx]).detach().numpy()
 obs_info = testing_data[idx].feature.detach().numpy()

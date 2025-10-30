@@ -12,8 +12,8 @@ class GeneralModel(nn.Module):
     def __init__(self, numObs, numTarget):
         super(GeneralModel, self).__init__()
         self.conv1 = GCNConv(3, 2)
-        self.conv2 = GCNConv(2, 1)
-        self.fc1 = nn.Linear(numObs, 128)
+        self.conv2 = GCNConv(2, 2)
+        self.fc1 = nn.Linear(2 * numObs, 128)
         self.fc2 = nn.Linear(128, 128)
         self.fc = nn.Linear(128, numTarget)
 
@@ -25,6 +25,7 @@ class GeneralModel(nn.Module):
         feature = self.conv2(feature, edge_index)
         feature = torch.relu(feature)
 
+        feature = feature.reshape(-1, 1)
         feature = feature.squeeze()
 
         feature = self.fc1(feature)
