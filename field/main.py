@@ -69,17 +69,21 @@ print("Data info: ")
 print(f"training size: {train_size} | validation size: {validate_size} | testing size: {test_size} | obs amount: {obs.shape[1]}")
 
 graph_nodes, edge_index = generateEdgeIndex(obs_station, lat, lon)
-plotObs(lat, lon, obs_station, edge_index)
+# plotObs(lat, lon, obs_station, edge_index)
 # plotEdge(graph_nodes, edge_index)
+# exit()
 
-exit()
+x, y = np.meshgrid(lat, lon, indexing='ij')
+target_points = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1)), axis=1)
+grid_nodes = np.concatenate((target_points, np.zeros((target_points.shape[0], 1), dtype=np.float32)), axis=1)
 
 processed_data = []
 for i in range(NUM_DATA):
     obs_reshaped = all_obs[i, valid_indices].reshape(-1, 1)
-    feature = torch.from_numpy(np.concatenate((obs_reshaped, obs_station), axis=1))
+    obs_nodes = np.concatenate((obs_reshaped, obs_station), axis=1)
+    feature = torch.from_numpy(np.concatenate((obs_nodes, grid_nodes), axis=0))
     vals = torch.from_numpy(all_val[i, MIN_LAT_INDEX:MIN_LAT_INDEX+LAT_SIZE, MIN_LON_INDEX:MIN_LON_INDEX+LON_SIZE].reshape(-1))
-    processed_data.append(MyData(feature, torch.from_numpy(edge_index), vals))
+    processed_data.append(MyData(feature, torch.from_numpy(edge_index), torch.from_numpy(target_points), vals))
 
 
 training_data = [processed_data[i] for i in training_indices]
@@ -128,6 +132,7 @@ model.load_state_dict(checkpoint)
 x, y = np.meshgrid(lat, lon, indexing='ij')
 coordinate = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1)), axis=1)
 
+model.eval()
 mse_error = np.zeros(LAT_SIZE * LON_SIZE)
 for data in testing_data:
     predict = model(data)
@@ -143,10 +148,15 @@ print("Average mse: ", np.mean(mse_error))
 
 # plotError(coordinate, mse)
 
-idx = 300
-real_val = testing_data[idx].vals.detach().numpy()
-predict_val = model(testing_data[idx]).detach().numpy()
-obs_info = testing_data[idx].feature.detach().numpy()
+# idx = 1
+# real_val = testing_data[idx].vals.detach().numpy()
+# predict_val = model(testing_data[idx]).detach().numpy()
+# obs_info = testing_data[idx].feature[:-testing_data[idx].vals.shape[0]].detach().numpy()
+
+idx = 5
+real_val = training_data[idx].vals.detach().numpy()
+predict_val = model(training_data[idx]).detach().numpy()
+obs_info = training_data[idx].feature[:-training_data[idx].vals.shape[0]].detach().numpy()
 
 plot3d(coordinate, real_val, predict_val, obs_info)
 # plot_compare_3d(coordinate, real_val, predict_val)

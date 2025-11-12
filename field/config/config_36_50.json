@@ -1,11 +1,11 @@
 {
-    "random_seed" : 42,
+    "random_seed" : 12,
     "lat_size" : 36,
     "lon_size" : 50,
     "min_lat_index" : 142,
     "min_lon_index" : 311,
     "num_data" : 1800,
-    "step_size" : 150,
+    "step_size" : 50,
     "gamma" : 0.7,
-    "num_epoch" : 1800
+    "num_epoch" : 100
 }

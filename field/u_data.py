@@ -77,7 +77,7 @@ def generateEdgeIndex(obs_station_pos, target_point_lat, target_point_lon):
     edge_grid = generateEdgeOfGrid(target_point_lat, target_point_lon, len(obs_station_pos))
     edge_station_2_grid = generateEdgeFromStation2Grid(obs_station_pos, target_point_lat, target_point_lon)
     
-    edge_index = edge_station
+    edge_index = np.concatenate((edge_station, edge_grid, edge_station_2_grid), axis=1)
     
     x, y = np.meshgrid(target_point_lat, target_point_lon, indexing='ij')
     target_points = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1)), axis=1)
