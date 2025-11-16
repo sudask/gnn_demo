@@ -14,15 +14,13 @@ class GeneralModel(nn.Module):
         super(GeneralModel, self).__init__()
         self.conv1 = GCNConv(3, 4)
         self.conv2 = GCNConv(4, 4)
-        self.conv3 = GCNConv(4, 4)
-        self.conv4 = GCNConv(4, 4)
         
         
         self.decoder = nn.Sequential(
             nn.Linear(4 + 2, 5),
-            nn.SELU(),
+            nn.LeakyReLU(),
             nn.Linear(5, 5),
-            nn.SELU(),
+            nn.LeakyReLU(),
             nn.Linear(5, 1),
         )
 
@@ -33,8 +31,6 @@ class GeneralModel(nn.Module):
         # --- Graph Encoder ---
         h = torch.relu(self.conv1(x, edge_index))
         h = torch.relu(self.conv2(h, edge_index))
-        h = torch.relu(self.conv3(h, edge_index))
-        h = torch.relu(self.conv4(h, edge_index))
         
         # --- Decoder ---
         # 取出目标节点

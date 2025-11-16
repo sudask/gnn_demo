@@ -121,7 +121,7 @@ scheduler3 = StepLR(optimizer, step_size=STEP_SIZE, gamma=GAMMA)
 # ======================== traing and svae model ========================
 
 save_path = f"checkpoints/model_{LAT_SIZE}_{LON_SIZE}.pth"
-# loss_history = train(model, training_data, validation_data, optimizer, scheduler3, criterion, NUM_EPOCH, save_path)
+loss_history = train(model, training_data, validation_data, optimizer, scheduler3, criterion, NUM_EPOCH, save_path)
 # plotLossCurve(loss_history)
 
 # ======================== display results ========================
