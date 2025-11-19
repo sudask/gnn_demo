@@ -67,9 +67,6 @@ edge_index = generateEdgeIndex(u_obs_station)
 # plotObs(u_lat, u_lon, u_obs_station, edge_index)
 # exit()
 
-x, y = np.meshgrid(lat, lon, indexing='ij')
-grid = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1)), axis=1)
-
 # noramlize
 training_temperature = all_val[training_indices, MIN_LAT_INDEX:MIN_LAT_INDEX+LAT_SIZE, MIN_LON_INDEX:MIN_LON_INDEX+LON_SIZE]
 min_temp = np.min(training_temperature)
@@ -92,13 +89,16 @@ norm_sta[:, 0] /= (max_lat - min_lat)
 norm_sta[:, 1] -= min_lon
 norm_sta[:, 1] /= (max_lon - min_lon)
 
+x, y = np.meshgrid(u_lat, u_lon, indexing='ij')
+grid = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1)), axis=1)
+
 # assemble data into MyData
 processed_data = []
 for i in range(NUM_DATA):
     obs_reshaped = norm_obs[i, :].reshape(-1, 1)
     feature = torch.from_numpy(np.concatenate((obs_reshaped, norm_sta), axis=1))
     vals = torch.from_numpy(norm_val[i].reshape(-1))
-    processed_data.append(MyData(feature, torch.from_numpy(edge_index), vals))
+    processed_data.append(MyData(feature, torch.from_numpy(edge_index), torch.from_numpy(grid), vals))
 
 
 training_data = [processed_data[i] for i in training_indices]
@@ -144,9 +144,6 @@ loss_history = train(model, training_data, validation_data, optimizer, scheduler
 checkpoint = torch.load(save_path, weights_only=True)
 model.load_state_dict(checkpoint)
 
-x, y = np.meshgrid(u_lat, u_lon, indexing='ij')
-coordinate = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1)), axis=1)
-
 mse_error = np.zeros(LAT_SIZE * LON_SIZE)
 for data in testing_data:
     predict = model(data)
@@ -177,6 +174,9 @@ obs_info = np.zeros_like(feature)
 obs_info[:, 0] = feature[:, 0] * (max_temp - min_temp) + min_temp
 obs_info[:, 1] = feature[:, 1] * (max_lat  - min_lat) + min_lat
 obs_info[:, 2] = feature[:, 2] * (max_lon  - min_lon) + min_lon
+
+x, y = np.meshgrid(u_lat, u_lon, indexing='ij')
+coordinate = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1)), axis=1)
 
 plot3d(coordinate, real_val, predict_val, obs_info)
 # plot_compare_3d(coordinate, real_val, predict_val)
