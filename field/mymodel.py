@@ -12,35 +12,9 @@ class MyData:
 class GeneralModel(nn.Module):
     def __init__(self, numObs, numTarget):
         super(GeneralModel, self).__init__()
-        self.conv1 = GCNConv(3, 2)
-        self.conv2 = GCNConv(2, 1)
-        self.fc1 = nn.Linear(numObs, 128)
-        self.fc2 = nn.Linear(128, 128)
-        self.fc = nn.Linear(128, numTarget)
-
-    def forward(self, data):
-        feature, edge_index = data.feature, data.edge_index
-
-        feature = self.conv1(feature, edge_index)
-        feature = torch.relu(feature)
-        feature = self.conv2(feature, edge_index)
-        feature = torch.relu(feature)
-
-        feature = feature.squeeze()
-
-        feature = self.fc1(feature)
-        feature = torch.relu(feature)
-        feature = self.fc2(feature)
-        feature = torch.relu(feature)
-        feature = self.fc(feature)
-
-        return feature.squeeze()
-    
-class DeepOnet(nn.Module):
-    def __init__(self, numObs, numTarget):
-        super(DeepOnet, self).__init__()
         self.conv1 = GCNConv(3, 4)
-        self.conv2 = GCNConv(4, 1)
+        self.conv2 = GCNConv(4, 4)
+        self.conv3 = GCNConv(4, 1)
         
         self.trunk = nn.Sequential(
             nn.Linear(2, 32),
@@ -56,14 +30,18 @@ class DeepOnet(nn.Module):
         feature, edge_index, grid = data.feature, data.edge_index, data.grid
         
         h = torch.relu(self.conv1(feature, edge_index))
-        b = torch.relu(self.conv2(h, edge_index))
+        h = torch.relu(self.conv2(h, edge_index))
+        b = torch.relu(self.conv3(h, edge_index))
         
         t = self.trunk(grid)
         
         output = torch.sum(b.squeeze(-1) * t, dim=1) + self.bias
         
+        branch_features = torch.relu(self.conv2(h, edge_index))
+        branch_output = torch.mean(branch_features, dim=0, keepdim=True)
+        
+        # 添加调试输出
+        print("Branch output range:", branch_output.min().item(), branch_output.max().item())
+        print("Branch output mean:", branch_output.mean().item())
+        
         return output
-        
-        
-        
-        

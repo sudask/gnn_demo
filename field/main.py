@@ -73,12 +73,15 @@ edge_index = generateEdgeIndex(obs_station)
 
 # exit()
 
+x, y = np.meshgrid(lat, lon, indexing='ij')
+grid = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1)), axis=1)
+
 processed_data = []
 for i in range(NUM_DATA):
     obs_reshaped = all_obs[i, valid_indices].reshape(-1, 1)
     feature = torch.from_numpy(np.concatenate((obs_reshaped, obs_station), axis=1))
     vals = torch.from_numpy(all_val[i, MIN_LAT_INDEX:MIN_LAT_INDEX+LAT_SIZE, MIN_LON_INDEX:MIN_LON_INDEX+LON_SIZE].reshape(-1))
-    processed_data.append(MyData(feature, torch.from_numpy(edge_index), vals))
+    processed_data.append(MyData(feature, torch.from_numpy(edge_index), torch.from_numpy(grid), vals))
 
 
 training_data = [processed_data[i] for i in training_indices]
@@ -116,7 +119,7 @@ scheduler3 = StepLR(optimizer, step_size=STEP_SIZE, gamma=GAMMA)
 # ======================== traing and svae model ========================
 
 save_path = f"checkpoints/model_{LAT_SIZE}_{LON_SIZE}.pth"
-# loss_history = train(model, training_data, validation_data, optimizer, scheduler3, criterion, NUM_EPOCH, save_path)
+loss_history = train(model, training_data, validation_data, optimizer, scheduler3, criterion, NUM_EPOCH, save_path)
 # plotLossCurve(loss_history)
 
 # ======================== display results ========================
