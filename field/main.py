@@ -178,6 +178,6 @@ obs_info[:, 2] = feature[:, 2] * (max_lon  - min_lon) + min_lon
 x, y = np.meshgrid(u_lat, u_lon, indexing='ij')
 coordinate = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1)), axis=1)
 
-plot3d(coordinate, real_val, predict_val, obs_info)
+plot3d(coordinate, denormalized_real_val, denormalized_predict_val, obs_info)
 # plot_compare_3d(coordinate, real_val, predict_val)
 
