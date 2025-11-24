@@ -89,7 +89,7 @@ norm_sta[:, 0] /= (max_lat - min_lat)
 norm_sta[:, 1] -= min_lon
 norm_sta[:, 1] /= (max_lon - min_lon)
 
-x, y = np.meshgrid(u_lat, u_lon, indexing='ij')
+x, y = np.meshgrid(norm_lat, norm_lon, indexing='ij')
 grid = np.concatenate((x.reshape(-1, 1), y.reshape(-1, 1)), axis=1)
 
 # assemble data into MyData
